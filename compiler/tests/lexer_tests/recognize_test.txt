@@ -1,0 +1,13 @@
+int a = 1 + 2;
+int b = 2 /4;
+char c = a * b
+int e = a != b;
+int f = a == b;
+int g = a <= b;
+int h = a >= b;
+return 2;
+if;
+while;
+struct;
+enum;
+12354215;
