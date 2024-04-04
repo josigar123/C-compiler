@@ -13,8 +13,8 @@ pub enum TokenType {
 }
 
 pub struct Token {
-    value: Option<String>,
-    token_type: TokenType,
+    pub value: Option<String>,
+    pub token_type: TokenType,
 }
 
 static PUNCT: [&'static str; 10] = ["{", "}", "(", ")", "[", "]", ":", ";", ",", "."];
@@ -143,6 +143,5 @@ pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
             println!("Unrecognized {}", lexeme);
         }
     }
-
     return tokens;
 }
