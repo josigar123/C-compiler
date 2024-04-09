@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 regex = "1.5"
+hashbrown = "0.14.3"
+lazy_static = "1.4"
+cargo-watch = "8.5.2"

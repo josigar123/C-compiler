@@ -1,8 +1,8 @@
+use hashbrown::HashSet;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
-use crate::lex;
 
 pub enum TokenType {
     IntLit,
@@ -13,8 +13,8 @@ pub enum TokenType {
 }
 
 pub struct Token {
-    value: Option<String>,
-    token_type: TokenType,
+    pub value: Option<String>,
+    pub token_type: TokenType,
 }
 
 static PUNCT: [&'static str; 10] = ["{", "}", "(", ")", "[", "]", ":", ";", ",", "."];
@@ -98,6 +98,29 @@ static KEYWORDS: &str = r#"\b(int|char|return|if|while|else|for|else if|struct|e
 static IDENTIFIERS: &str = r#"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#;
 static OPERATORS: &str = r"[\+\-\*/%&|^=!<>]=?|>>=?|<<=?|&&|\|\||\+\+|--|->|==|!=|<=|>=|\?";
 static PUNCTUATORS: &str = r#"[{}()\[\]:;,.]"#;
+
+lazy_static! {
+    static ref KEYWORD_HASHSET: HashSet<&'static str> = {
+        let mut set = HashSet::new();
+        set.insert("int");
+        set.insert("char");
+        set.insert("return");
+        set.insert("if");
+        set.insert("while");
+        set.insert("else");
+        set.insert("for");
+        set.insert("else if");
+        set.insert("struct");
+        set.insert("enum");
+        set.insert("static");
+        set.insert("break");
+        set.insert("continue");
+        set.insert("void");
+        set.insert("union");
+        set
+    };
+}
+
 pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
     println!("From tokenize_lexemes");
     let mut tokens: Vec<Token> = Vec::new();
