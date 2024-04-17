@@ -1,5 +1,6 @@
 mod lex;
 mod lex_refactor;
+mod min_magiske_parser;
 mod sample_parser;
 mod token;
 
