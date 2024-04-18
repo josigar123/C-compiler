@@ -1,127 +1,196 @@
-use crate::lex;
-use lex::Token;
-use lex::TokenType;
+use crate::token;
+use crate::token::{Token, TokenType};
 
-pub enum Expression {
+// TODO: FIKS Function name, lag og parse_program og en hoved parse funksjon som skal returnere roten til treet.
+// Prøv å generer kode når dette er gjort
+pub enum Expr {
     Number(i32),
-    Name(String),
-    BinaryOp {
-        op: String,
-        left: Box<Expression>,
-        right: Box<Expression>,
-    },
-    Assign { 
-        name: String, 
-        value: Box<Expression>
-     },
 }
 
-pub enum Statement { //Ikke implementert metodene for parsing av dette enda.
-    Expression(Expression),
-    Return(Expression),
-    If { condition: Expression, then_branch: Box<Statement>, else_branch: Option<Box<Statement>>},
-    While { condition: Expression, body: Box<Statement> },
+pub struct ExprNode {
+    expr: Expr,
 }
 
+pub enum Statement {
+    Return(ExprNode),
+}
 
-pub fn expr(tokens: &[Token], index: usize) -> Result<(usize, Expression), String> {
-    // Expr -> Term Expr'
-    let (new_index, node) = term(tokens, index)?; // returner Err hvis det er feil ved eksekveringen av koden. Videre linjer blir ikke eksekvert.
-    e_prime(tokens, new_index, node)
-} //Complete
+pub struct StatementNode {
+    pub statement: Statement,
+}
 
-pub fn term(tokens: &[Token], index: usize) -> Result<(usize, Expression), String> {
-    // Term -> Factor Term'
-    let (new_index, node) = factor(tokens, index)?; // returner Err hvis det er feil ved eksekveringen av koden. Videre linjer blir ikke eksekvert.
-    t_prime(tokens, new_index, node)
-} //Complete
+pub struct FunctionNode {
+    pub return_value: TokenType,
+    pub name: String, // Kan evt være expected tokentype Ident
+    pub body: Vec<StatementNode>,
+}
 
+pub struct ProgramNode {
+    pub body: Vec<FunctionNode>,
+}
 
-pub fn e_prime(tokens: &[Token], index: usize, left_node: Expression) -> Result<(usize, Expression), String> {
-    if let Some(token) = tokens.get(index) {
-        match token.token_type {
-            TokenType::Plus | TokenType::Minus => {
-                let op = if token.token_type == TokenType::Plus { "+" } else { "-" };
-                let (new_index, right_node) = term(tokens, index + 1)?;
-                let new_node = Expression::BinaryOp {
-                    op: op.to_string(),
-                    left: Box::new(left_node),
-                    right: Box::new(right_node),
-                };
-                e_prime(tokens, new_index, new_node)
-            },
-            _ => Ok((index, left_node)),
+pub struct Parser {
+    token_index: usize,
+    token_stream: Vec<Token>,
+}
+
+impl Parser {
+    // Constructor, implicitly sets index to 0
+    fn new(tokens: Vec<Token>) -> Self {
+        Parser {
+            token_index: 0,
+            token_stream: tokens,
         }
-    } else {
-        Ok((index, left_node));
-        //Err("Unexpected end of input in EPrime'".to_string())
     }
-}//Complete
 
-
-pub fn t_prime(tokens: &[Token], index: usize, left_node: Expression) -> Result<(usize, Expression), String> {
-    if let Some(token) = tokens.get(index) {
-        match token.token_type {
-            TokenType::Mul | TokenType::Div => {
-                let op = if token.token_type == TokenType::Mul { "*" } else { "/" };
-                let (new_index, right_node) = factor(tokens, index + 1)?;
-                let new_node = Expression::BinaryOp {
-                    op: op.to_string(),
-                    left: Box::new(left_node),
-                    right: Box::new(right_node),
-                };
-                t_prime(tokens, new_index, new_node)
-            },
-            _ => Ok((index, left_node)),
-        }
-    } else {
-        Ok((index, left_node))
-        //Err("Unexpected end of input in TPrime'".to_string())
-    }
-} //Complete
-
-pub fn factor(tokens: &[Token], index: usize) -> Result<(usize, Expression), String> {
-    // Factor -> (Expr)
-    if let Some(token) = tokens.get(index) {
-        match &token.token_type {
-            Some(token) if token.token_type == TokenType::LParen => {    //Dersom uttrykket begynner med ( vil vi se hva som er innholdet i parantene, det kan være hva 
-                
-                let (expr_node, new_index) = expr(tokens, index + 1)?;
-                if let Some(next_token) = tokens.get(new_index) {
-                    if next_token.token_type == TokenType::RParen {
-                            return Ok((new_index + 1, expr_node));
-                    }                    
-                }
-                Err("Expected ')'".to_string())
-            },
-            _ if token.token_type == TokenType::IntLit => { //Sjekker om det er intlit
-                if let Ok(num) = token.parse::<i32>() {
-                    return Ok((index + 1, Expression::Number(num)));
-                }
-                Err("Invalid integer literal".to_string())
-            },
-            _ if token.token_type == TokenType::StringLit => { //sjekker om det er stringlit
-                if let Some(next_token) = tokens.get(index + 1) {
-                    if token.token_type == TokenType::Assign { //Sjekker om det er en assignment operasjon
-                        let (new_index, new_right_node) = expr(tokens, index + 2)?;                                 //Tilsvarer A = 5;
-                        return Ok((new_index, Expression::Assign {name: token, value: Box::new(new_right_node) })) // Returnerer en ny indeks, og legger til en ny node i treet med verdien til variablen.
-                    }                           
-                }
-                return Ok((index + 1, Expression::Name(token)))
-            }
-            _ => Err("Unexpected token in factor".to_string()),
+    // Expr er nå kun i32
+    fn parse_expression(&mut self) -> Option<ExprNode> {
+        // Bekrefter at token vil ha en verdi
+        if self.token_index > self.token_stream.len() {
+            return None;
         }
 
-    } else {
-        Err("No token found in factor".to_string());
-    }
-} //Complete
+        // Forventer at Expr skal være et heltall
+        self.expect(TokenType::IntLit);
 
-pub fn parse(tokens: Vec<Token>) -> Result<Expression, String> {
-    let (index, ast) = expr(&tokens, 0)?;
-    if index != tokens.len() {
-        Err("Extra tokens after valid expression".to_string())
-    } else {
-        Ok(ast)
+        // Parser heltall
+        let parsed_int: i32 = match self.token_stream[self.token_index]
+            .value
+            .as_ref()
+            .unwrap()
+            .parse()
+        {
+            Ok(parsed) => parsed,
+            // Kan returne None for nå, men bør si ifra at heltall er forventet
+            Err(_) => return None,
+        };
+        //Returnerer expression node
+        Some(ExprNode {
+            expr: Expr::Number(parsed_int),
+        })
     }
+
+    fn parse_statement(&mut self) -> Option<StatementNode> {
+        if self.token_index > self.token_stream.len() {
+            return None;
+        }
+
+        // Forventer return da dette er eneste expression
+        self.expect(TokenType::ReturnKeyword);
+
+        let statement_expression = self.parse_expression().unwrap();
+
+        // Konsumerer for å stå på neste token
+        self.consume();
+        // Neste token er forventet å være semikolon
+        self.expect(TokenType::Semi);
+        self.consume();
+
+        Some(StatementNode {
+            statement: Statement::Return(statement_expression),
+        })
+    }
+
+    /*
+       Func har:
+           return type: IntKeyword
+           name: main
+           body: List of StatementNode
+    */
+    fn parse_function(&mut self) -> Option<FunctionNode> {
+        if self.token_index > self.token_stream.len() {
+            return None;
+        }
+
+        // Holder statements
+        let mut statement_list: Vec<StatementNode> = vec![];
+
+        // Expect IntKeyword
+        self.expect(TokenType::IntKeyword); // int
+
+        let return_type = self
+            .token_stream
+            .get(self.token_index)
+            .unwrap()
+            .token_type
+            .clone();
+
+        self.consume();
+        self.expect(TokenType::Identifier); // main
+
+        let function_name = self
+            .token_stream
+            .get(self.token_index)
+            .unwrap()
+            .value
+            .clone()
+            .unwrap();
+        self.consume();
+        self.expect(TokenType::LParen); // (
+        self.consume();
+        self.expect(TokenType::RParen); // )
+        self.consume();
+        self.expect(TokenType::LBrace); // {
+        self.consume();
+
+        let statement = self.parse_statement();
+
+        self.expect(TokenType::RBrace); // }
+
+        // Kun 1 statement for nå
+        statement_list.push(statement.unwrap());
+        Some(FunctionNode {
+            return_value: return_type,
+            name: function_name,
+            body: statement_list,
+        })
+    }
+
+    fn parse_program(&mut self) -> Option<ProgramNode> {
+        if self.token_index > self.token_stream.len() {
+            return None;
+        }
+
+        let mut function_list: Vec<FunctionNode> = vec![];
+
+        while let Some(function) = self.parse_function() {
+            function_list.push(function);
+        }
+
+        Some(ProgramNode {
+            body: function_list,
+        })
+    }
+
+    // ############# PARSER UTIL START ####################
+    // Consume a token from token stream
+    fn consume(&mut self) {
+        self.token_index += 1;
+    }
+
+    // Peek en token, returnerer den
+    fn peek(&mut self, offset: usize) -> Option<&Token> {
+        return self.token_stream.get(self.token_index + offset);
+    }
+
+    // Få neste token i tokenstream, øker og index med 1
+    fn next(&mut self) -> Option<Token> {
+        if self.token_index < self.token_stream.len() {
+            let token = self.token_stream[self.token_index].clone();
+            self.token_index += 1;
+            Some(token)
+        } else {
+            None
+        }
+    }
+
+    // Forvent token, e.g ved funksjoner forventes en struktur
+    fn expect(&mut self, expected: TokenType) -> Result<(), String> {
+        match self.next() {
+            Some(token) if token.token_type == expected => Ok(()),
+            Some(token) => Err(format!("Expected {:?} but found {:?}", expected, token)),
+            None => Err("Unexpected stream end".to_string()),
+        }
+    }
+    // ############# PARSER UTIL START ####################
 }
