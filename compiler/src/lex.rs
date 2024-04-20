@@ -12,9 +12,6 @@ use crate::token::{
 use crate::token::{IDENTIFIERS, INTEGER_LITERAL};
 
 pub fn get_lexemes(source_file: &str) -> Vec<String> {
-    println!("From get_lexemes");
-
-    println!("source_file {}", source_file);
     let mut lexemes: Vec<String> = Vec::new();
 
     let file = File::open(source_file).expect("Failed to open file");
@@ -89,18 +86,10 @@ pub fn get_lexemes(source_file: &str) -> Vec<String> {
         }
     }
 
-    println!("From get_lexemes");
-    for lex in &lexemes {
-        println!("---------------");
-        println!("Lexeme: {} ", lex);
-        println!("---------------");
-    }
-    println!();
     lexemes
 }
 
 pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
-    println!("From tokenize_lexemes");
     let mut tokens: Vec<Token> = Vec::new();
 
     let integer_literal_regex = &INTEGER_LITERAL;
@@ -155,11 +144,5 @@ pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
         }
     }
 
-    for _token in &tokens {
-        println!("---------------");
-        println!("Value {:?}", _token.value);
-        println!("TokenType {:?}", _token.token_type);
-        println!("---------------");
-    }
-    return tokens;
+    tokens
 }
