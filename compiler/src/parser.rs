@@ -69,32 +69,32 @@ impl Parser {
         if self.token_index >= self.token_stream.len() {
             return None;
         }
-        self.consume();
-        // Forventer at Expr skal være et heltall
-        self.expect(TokenType::IntLit).expect("Error: ");
 
-        let int_to_parse = self.token_stream[self.token_index]
+        // Forventer at Expr skal være et heltall
+        if let Err(error) = self.expect(TokenType::IntLit) {
+            println!("Error {}", error);
+        }
+
+        let int_value = self.token_stream[self.token_index]
             .value
             .as_ref()
-            .unwrap()
-            .parse::<i32>();
-
-        // Parser heltall
-        match int_to_parse {
-            Ok(parsed) => {
-                println!("Integers is parsed");
-                self.consume();
-                //Returnerer expression node
-                Some(ExprNode {
-                    expr: Expr::Number(parsed),
+            .map(|s| {
+                s.parse::<i32>().map_err(|e| {
+                    println!("Error: Failed to parse integer: {}", e);
                 })
-            }
-            // Kan returne None for nå, men bør si ifra at heltall er forventet
-            Err(_) => {
-                println!("Integer failed parsing");
-                None
-            }
-        }
+            })
+            .and_then(|result| result.ok());
+
+        let parsed = match int_value {
+            Some(parsed) => parsed,
+            None => return None,
+        };
+
+        // spiser expression
+        self.consume();
+        Some(ExprNode {
+            expr: Expr::Number(parsed),
+        })
     }
 
     fn parse_statement(&mut self) -> Option<StatementNode> {
@@ -103,16 +103,28 @@ impl Parser {
         }
 
         // Forventer return da dette er eneste expression
-        self.expect(TokenType::ReturnKeyword).expect("Error: ");
+        if let Err(error) = self.expect(TokenType::ReturnKeyword) {
+            println!("Error {}", error);
+        }
 
-        let statement_expression = self.parse_expression().unwrap();
+        // Move into expression
+        self.consume();
+        let expression;
+        if let Some(statement_expression) = self.parse_expression() {
+            expression = statement_expression;
+        } else {
+            println!("Error: Failed to parse expression");
+            return None;
+        }
 
         // Neste token er forventet å være semikolon
-        self.expect(TokenType::Semi).ok()?;
+        if let Err(error) = self.expect(TokenType::Semi) {
+            println!("Error {}", error);
+        }
         self.consume();
 
         Some(StatementNode {
-            statement: Statement::Return(statement_expression),
+            statement: Statement::Return(expression),
         })
     }
 
