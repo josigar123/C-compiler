@@ -64,6 +64,7 @@ pub enum TokenType {
 }
 
 // Represents a Token
+#[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     pub value: Option<String>,
     pub token_type: TokenType,

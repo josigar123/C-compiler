@@ -100,6 +100,7 @@ pub fn parse_expression(tokens: &Vec<Token>, mut token_index: usize) -> Option<(
     }
 }
 
+/*
 pub fn parse_function(tokens: &Vec<Token>, token_index: usize) -> Option<(FunctionNode, usize)> {
     if token_index >= tokens.len() {
         return None;
@@ -124,3 +125,4 @@ pub fn parse_function(tokens: &Vec<Token>, token_index: usize) -> Option<(Functi
         _ => None,
     }
 }
+*/
