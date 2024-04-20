@@ -1,8 +1,5 @@
-use crate::token;
 use crate::token::{Token, TokenType};
 
-// TODO: FIKS Function name, lag og parse_program og en hoved parse funksjon som skal returnere roten til treet.
-// Prøv å generer kode når dette er gjort
 pub enum Expr {
     Number(i32),
 }
@@ -30,44 +27,74 @@ pub struct ProgramNode {
 }
 
 pub struct Parser {
-    token_index: usize,
-    token_stream: Vec<Token>,
+    pub token_index: usize,
+    pub token_stream: Vec<Token>,
 }
 
 impl Parser {
     // Constructor, implicitly sets index to 0
-    fn new(tokens: Vec<Token>) -> Self {
+    pub fn new(tokens: Vec<Token>) -> Self {
         Parser {
             token_index: 0,
             token_stream: tokens,
         }
     }
 
+    // Consume a token from token stream, øker index "Konsumerer"
+    fn consume(&mut self) {
+        self.token_index += 1;
+    }
+
+    // Peek en token, returnerer den, advancer ikke token_stream
+    fn peek(&mut self, offset: usize) -> Option<&Token> {
+        if self.token_index + offset >= self.token_stream.len() {
+            return None;
+        }
+        return self.token_stream.get(self.token_index + offset);
+    }
+
+    // Forvent token, e.g ved funksjoner forventes en struktur
+    fn expect(&mut self, expected: TokenType) -> Result<(), String> {
+        // Checks the current token
+        match self.peek(0) {
+            Some(token) if token.token_type == expected => Ok(()),
+            Some(token) => Err(format!("Expected {:?} but found {:?}", expected, token)),
+            None => Err("Unexpected stream end".to_string()),
+        }
+    }
+
     // Expr er nå kun i32
     fn parse_expression(&mut self) -> Option<ExprNode> {
         // Bekrefter at token vil ha en verdi
-        if self.token_index > self.token_stream.len() {
+        if self.token_index >= self.token_stream.len() {
             return None;
         }
-
+        self.consume();
         // Forventer at Expr skal være et heltall
-        self.expect(TokenType::IntLit);
+        self.expect(TokenType::IntLit).expect("Error: ");
 
-        // Parser heltall
-        let parsed_int: i32 = match self.token_stream[self.token_index]
+        let int_to_parse = self.token_stream[self.token_index]
             .value
             .as_ref()
             .unwrap()
-            .parse()
-        {
-            Ok(parsed) => parsed,
+            .parse::<i32>();
+
+        // Parser heltall
+        match int_to_parse {
+            Ok(parsed) => {
+                println!("Integers is parsed");
+                self.consume();
+                //Returnerer expression node
+                Some(ExprNode {
+                    expr: Expr::Number(parsed),
+                })
+            }
             // Kan returne None for nå, men bør si ifra at heltall er forventet
-            Err(_) => return None,
-        };
-        //Returnerer expression node
-        Some(ExprNode {
-            expr: Expr::Number(parsed_int),
-        })
+            Err(_) => {
+                println!("Integer failed parsing");
+                None
+            }
+        }
     }
 
     fn parse_statement(&mut self) -> Option<StatementNode> {
@@ -76,14 +103,12 @@ impl Parser {
         }
 
         // Forventer return da dette er eneste expression
-        self.expect(TokenType::ReturnKeyword);
+        self.expect(TokenType::ReturnKeyword).expect("Error: ");
 
         let statement_expression = self.parse_expression().unwrap();
 
-        // Konsumerer for å stå på neste token
-        self.consume();
         // Neste token er forventet å være semikolon
-        self.expect(TokenType::Semi);
+        self.expect(TokenType::Semi).ok()?;
         self.consume();
 
         Some(StatementNode {
@@ -91,14 +116,8 @@ impl Parser {
         })
     }
 
-    /*
-       Func har:
-           return type: IntKeyword
-           name: main
-           body: List of StatementNode
-    */
     fn parse_function(&mut self) -> Option<FunctionNode> {
-        if self.token_index > self.token_stream.len() {
+        if self.token_index >= self.token_stream.len() {
             return None;
         }
 
@@ -106,17 +125,10 @@ impl Parser {
         let mut statement_list: Vec<StatementNode> = vec![];
 
         // Expect IntKeyword
-        self.expect(TokenType::IntKeyword); // int
-
-        let return_type = self
-            .token_stream
-            .get(self.token_index)
-            .unwrap()
-            .token_type
-            .clone();
-
+        self.expect(TokenType::IntKeyword).expect("Error: "); // int
+        let return_type = self.token_stream[self.token_index].token_type.clone();
         self.consume();
-        self.expect(TokenType::Identifier); // main
+        self.expect(TokenType::Identifier).expect("Error: "); // main
 
         let function_name = self
             .token_stream
@@ -125,19 +137,22 @@ impl Parser {
             .value
             .clone()
             .unwrap();
+
         self.consume();
-        self.expect(TokenType::LParen); // (
+        self.expect(TokenType::LParen).expect("Error: "); // (
         self.consume();
-        self.expect(TokenType::RParen); // )
+        self.expect(TokenType::RParen).expect("Error: "); // )
         self.consume();
-        self.expect(TokenType::LBrace); // {
+        self.expect(TokenType::LBrace).expect("Error: "); // {
         self.consume();
 
+        // For flere statements så må det være en løkke som pusher alle statements på listen
         let statement = self.parse_statement();
 
-        self.expect(TokenType::RBrace); // }
+        self.expect(TokenType::RBrace).expect("Error: "); // }
 
-        // Kun 1 statement for nå
+        self.consume(); // Consume }
+                        // Kun 1 statement for nå
         statement_list.push(statement.unwrap());
         Some(FunctionNode {
             return_value: return_type,
@@ -146,7 +161,7 @@ impl Parser {
         })
     }
 
-    fn parse_program(&mut self) -> Option<ProgramNode> {
+    pub fn parse_program(&mut self) -> Option<ProgramNode> {
         if self.token_index > self.token_stream.len() {
             return None;
         }
@@ -161,36 +176,53 @@ impl Parser {
             body: function_list,
         })
     }
+}
 
-    // ############# PARSER UTIL START ####################
-    // Consume a token from token stream
-    fn consume(&mut self) {
-        self.token_index += 1;
-    }
+// Fra ChatGPT
 
-    // Peek en token, returnerer den
-    fn peek(&mut self, offset: usize) -> Option<&Token> {
-        return self.token_stream.get(self.token_index + offset);
-    }
-
-    // Få neste token i tokenstream, øker og index med 1
-    fn next(&mut self) -> Option<Token> {
-        if self.token_index < self.token_stream.len() {
-            let token = self.token_stream[self.token_index].clone();
-            self.token_index += 1;
-            Some(token)
-        } else {
-            None
+impl ProgramNode {
+    pub fn walk_and_print(&self) {
+        println!("In program node");
+        for function in &self.body {
+            function.walk_and_print(0);
         }
     }
+}
 
-    // Forvent token, e.g ved funksjoner forventes en struktur
-    fn expect(&mut self, expected: TokenType) -> Result<(), String> {
-        match self.next() {
-            Some(token) if token.token_type == expected => Ok(()),
-            Some(token) => Err(format!("Expected {:?} but found {:?}", expected, token)),
-            None => Err("Unexpected stream end".to_string()),
+impl FunctionNode {
+    fn walk_and_print(&self, indent_level: usize) {
+        println!("In main function");
+        println!(
+            "{}Function: {} -> {:?}",
+            " ".repeat(indent_level * 4),
+            self.name,
+            self.return_value
+        );
+        for statement in &self.body {
+            statement.walk_and_print(indent_level + 1);
         }
     }
-    // ############# PARSER UTIL START ####################
+}
+
+impl StatementNode {
+    fn walk_and_print(&self, indent_level: usize) {
+        println!("In return statement");
+        match &self.statement {
+            Statement::Return(expr_node) => {
+                println!("{}Return Statement", " ".repeat(indent_level * 4));
+                expr_node.walk_and_print(indent_level + 1);
+            }
+        }
+    }
+}
+
+impl ExprNode {
+    fn walk_and_print(&self, indent_level: usize) {
+        println!("In the expression");
+        match &self.expr {
+            Expr::Number(num) => {
+                println!("{}Number: {}", " ".repeat(indent_level * 4), num);
+            }
+        }
+    }
 }
