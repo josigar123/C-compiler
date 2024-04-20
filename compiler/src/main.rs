@@ -5,7 +5,7 @@ mod lex;
 mod parser;
 mod token;
 
-// Loggfør ish 4 timer for lexer refaktorering søndag 7 april 12-16
+// Loggfør ish 2 timer 20 min for lørdag 20.april 16:00 -18:20
 fn main() {
     // Lexing
     let return_int = "tests/parser_tests/return_int.c";
@@ -13,11 +13,24 @@ fn main() {
     let mut lexemes: Vec<String> = vec![];
     let mut tokens: Vec<token::Token> = vec![];
 
-    lexemes = lex::get_lexemes(&return_int);
+    lexemes = lex::get_lexemes(return_int);
     tokens = lex::tokenize_lexemes(lexemes);
 
     let mut parser = parser::Parser::new(tokens);
 
     let program_node = parser.parse_program();
     program_node.unwrap().walk_and_print();
+
+    println!();
+    // Tiny gen test:
+    let expression = parser::ExprNode {
+        expr: parser::Expr::Number(32),
+    };
+
+    let statement = parser::StatementNode {
+        statement: parser::Statement::Return(expression),
+    };
+
+    let asm = statement.generate_assembly();
+    println!("{asm}");
 }

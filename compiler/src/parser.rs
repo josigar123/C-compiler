@@ -5,7 +5,7 @@ pub enum Expr {
 }
 
 pub struct ExprNode {
-    expr: Expr,
+    pub expr: Expr,
 }
 
 pub enum Statement {
