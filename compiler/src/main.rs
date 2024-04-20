@@ -1,7 +1,7 @@
 use std::vec;
 
 mod gen;
-mod lex_refactor;
+mod lex;
 mod parser;
 mod token;
 
@@ -13,8 +13,8 @@ fn main() {
     let mut lexemes: Vec<String> = vec![];
     let mut tokens: Vec<token::Token> = vec![];
 
-    lexemes = lex_refactor::get_lexemes(&return_int);
-    tokens = lex_refactor::tokenize_lexemes(lexemes);
+    lexemes = lex::get_lexemes(&return_int);
+    tokens = lex::tokenize_lexemes(lexemes);
 
     let mut parser = parser::Parser::new(tokens);
 
