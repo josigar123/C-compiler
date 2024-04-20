@@ -73,6 +73,7 @@ impl Parser {
         // Forventer at Expr skal være et heltall
         if let Err(error) = self.expect(TokenType::IntLit) {
             println!("Error {}", error);
+            return None;
         }
 
         let int_value = self.token_stream[self.token_index]
@@ -105,6 +106,7 @@ impl Parser {
         // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {
             println!("Error {}", error);
+            return None;
         }
 
         // Move into expression
@@ -120,7 +122,10 @@ impl Parser {
         // Neste token er forventet å være semikolon
         if let Err(error) = self.expect(TokenType::Semi) {
             println!("Error {}", error);
+            return None;
         }
+
+        // Spiser semikolon
         self.consume();
 
         Some(StatementNode {
@@ -137,31 +142,63 @@ impl Parser {
         let mut statement_list: Vec<StatementNode> = vec![];
 
         // Expect IntKeyword
-        self.expect(TokenType::IntKeyword).expect("Error: "); // int
+        if let Err(error) = self.expect(TokenType::IntKeyword) {
+            println!("Error {}", error);
+            return None;
+        } // int
+
         let return_type = self.token_stream[self.token_index].token_type.clone();
-        self.consume();
-        self.expect(TokenType::Identifier).expect("Error: "); // main
 
-        let function_name = self
-            .token_stream
-            .get(self.token_index)
-            .unwrap()
-            .value
-            .clone()
-            .unwrap();
+        // Spiser returtype
+        self.consume();
 
+        if let Err(error) = self.expect(TokenType::Identifier) {
+            println!("Error {}", error);
+            return None;
+        } // main or other function ident
+
+        let function_name = match self.token_stream.get(self.token_index) {
+            Some(token) => match &token.value {
+                Some(value) => value.clone(),
+                None => {
+                    println!("Error: Missing function name");
+                    return None;
+                }
+            },
+            None => {
+                println!("Error: Token index out of range");
+                return None;
+            }
+        };
+
+        // Consume Identifier
         self.consume();
-        self.expect(TokenType::LParen).expect("Error: "); // (
+        if let Err(error) = self.expect(TokenType::LParen) {
+            println!("Error {}", error);
+            return None;
+        } // (
+          // Consume LParen
         self.consume();
-        self.expect(TokenType::RParen).expect("Error: "); // )
+        if let Err(error) = self.expect(TokenType::RParen) {
+            println!("Error {}", error);
+            return None;
+        } // )
+          // Consume RParen
         self.consume();
-        self.expect(TokenType::LBrace).expect("Error: "); // {
+        if let Err(error) = self.expect(TokenType::LBrace) {
+            println!("Error {}", error);
+            return None;
+        } // {
+          // Consume RBrace
         self.consume();
 
         // For flere statements så må det være en løkke som pusher alle statements på listen
         let statement = self.parse_statement();
 
-        self.expect(TokenType::RBrace).expect("Error: "); // }
+        if let Err(error) = self.expect(TokenType::RBrace) {
+            println!("Error {}", error);
+            return None;
+        } // }
 
         self.consume(); // Consume }
                         // Kun 1 statement for nå
@@ -194,7 +231,6 @@ impl Parser {
 
 impl ProgramNode {
     pub fn walk_and_print(&self) {
-        println!("In program node");
         for function in &self.body {
             function.walk_and_print(0);
         }
@@ -203,7 +239,6 @@ impl ProgramNode {
 
 impl FunctionNode {
     fn walk_and_print(&self, indent_level: usize) {
-        println!("In main function");
         println!(
             "{}Function: {} -> {:?}",
             " ".repeat(indent_level * 4),
@@ -218,7 +253,6 @@ impl FunctionNode {
 
 impl StatementNode {
     fn walk_and_print(&self, indent_level: usize) {
-        println!("In return statement");
         match &self.statement {
             Statement::Return(expr_node) => {
                 println!("{}Return Statement", " ".repeat(indent_level * 4));
@@ -230,7 +264,6 @@ impl StatementNode {
 
 impl ExprNode {
     fn walk_and_print(&self, indent_level: usize) {
-        println!("In the expression");
         match &self.expr {
             Expr::Number(num) => {
                 println!("{}Number: {}", " ".repeat(indent_level * 4), num);

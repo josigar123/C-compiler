@@ -20,5 +20,4 @@ fn main() {
 
     let program_node = parser.parse_program();
     program_node.unwrap().walk_and_print();
-    println!("Program successfully parsed!");
 }
