@@ -10,17 +10,28 @@ impl ExprNode {
     }
 }
 
-/*
 impl FunctionNode {
-    pub fn generate_assembly(&self) -> String {}
+    pub fn generate_assembly(&self) -> String {
+        let mut function_text_global_name =
+            format!("\t.text\n\t.global _{}\n_{}:", self.name, self.name);
+        for statement in &self.body {
+            function_text_global_name = format!(
+                "{}\n\t{}",
+                function_text_global_name,
+                statement.generate_assembly()
+            );
+        }
+
+        function_text_global_name
+    }
 }
-*/
+
 impl StatementNode {
     pub fn generate_assembly(&self) -> String {
         match &self.statement {
             Statement::Return(expr_node) => {
                 let expr_asm = expr_node.generate_assembly();
-                format!("{}\nret", expr_asm)
+                format!("{}\n\tret", expr_asm)
             }
         }
     }
@@ -33,5 +44,14 @@ pub struct Generator {
 impl Generator {
     pub fn new(root_node: ProgramNode) -> Self {
         Generator { root: root_node }
+    }
+
+    pub fn walk_da_tree(&self) -> String {
+        let mut assembly = "".to_string();
+        for function in &self.root.body {
+            assembly += &function.generate_assembly();
+        }
+
+        assembly
     }
 }

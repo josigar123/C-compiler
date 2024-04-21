@@ -1,14 +1,15 @@
+use std::fs;
 use std::vec;
-
 mod gen;
 mod lex;
 mod parser;
 mod token;
 
-// Loggfør ish 2 timer 20 min for lørdag 20.april 16:00 -18:20
+// Loggfør ish 2 timer 30 min for lørdag 20.april 16:00 -18:30
 fn main() {
     // Lexing
     let return_int = "tests/parser_tests/return_int.c";
+    let output_assembly_path = "bin/out.s";
 
     let mut lexemes: Vec<String> = vec![];
     let mut tokens: Vec<token::Token> = vec![];
@@ -18,19 +19,16 @@ fn main() {
 
     let mut parser = parser::Parser::new(tokens);
 
-    let program_node = parser.parse_program();
-    program_node.unwrap().walk_and_print();
+    let program_node = parser.parse_program().expect("Failed to parse program");
+    program_node.walk_and_print();
 
+    let generator = gen::Generator::new(program_node);
+
+    let asm = generator.walk_da_tree();
     println!();
-    // Tiny gen test:
-    let expression = parser::ExprNode {
-        expr: parser::Expr::Number(32),
-    };
 
-    let statement = parser::StatementNode {
-        statement: parser::Statement::Return(expression),
-    };
-
-    let asm = statement.generate_assembly();
-    println!("{asm}");
+    match fs::write(output_assembly_path, asm) {
+        Ok(_) => println!("File generated at {}", output_assembly_path),
+        Err(e) => eprintln!("Error writing to {}: {}", output_assembly_path, e),
+    }
 }

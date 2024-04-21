@@ -202,6 +202,8 @@ impl Parser {
 
         self.consume(); // Consume }
                         // Kun 1 statement for nå
+
+        // Verdt å refaktorere unrap bruken her
         statement_list.push(statement.unwrap());
         Some(FunctionNode {
             return_value: return_type,
