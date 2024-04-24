@@ -1,11 +1,27 @@
-use crate::parser::{self, Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode};
+use crate::{
+    parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode},
+    token::TokenType,
+};
 
 impl ExprNode {
-    // Assembly for int lit, eller immediate verdi, for mer kompliserte uttrykk
-    // kan de matches for andre enum varianter og printe tilsvarende assembly
     pub fn generate_assembly(&self) -> String {
         match &self.expr {
             Expr::Number(num) => format!("mov x0, #{}", num),
+            Expr::UnaryOp(operator, expr) => match operator {
+                TokenType::Minus => {
+                    let expr_asm = expr.as_ref().unwrap().generate_assembly();
+                    format!("{}\n\tneg x0, x0", expr_asm)
+                }
+                TokenType::BitComplement => {
+                    let expr_asm = expr.as_ref().unwrap().generate_assembly();
+                    format!("{}\n\tnot x0, x0", expr_asm)
+                }
+                TokenType::Not => {
+                    let expr_asm = expr.as_ref().unwrap().generate_assembly();
+                    format!("{}\n\tcmp x0, #0\n\tmov x0, #0\n\tcset x0, eq", expr_asm)
+                }
+                _ => "Unsupported operator".to_string(),
+            },
         }
     }
 }

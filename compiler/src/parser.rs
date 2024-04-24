@@ -1,26 +1,16 @@
-use crate::token::{self, Token, TokenType};
+use crate::token::{Token, TokenType};
 
 pub enum Expr {
     Number(i32),
+    UnaryOp(TokenType, Option<Box<ExprNode>>),
 }
 
 pub struct ExprNode {
     pub expr: Expr,
 }
 
-//REFACTOR: Split into AssignmentStruct for å øke lesbarhet
-// Og en eventuell enum for å holde de forskjellige verdiene som kan tilegnes Ident
 pub enum Statement {
     Return(ExprNode),
-    // Assignment(AssignmentConstruct),
-}
-
-pub struct AssignmentConstruct {
-    data_type: TokenType,
-    var_name: TokenType,
-    assignment: TokenType,
-    var_val: String,
-    semi: TokenType,
 }
 
 pub struct StatementNode {
@@ -51,29 +41,6 @@ impl Parser {
         }
     }
 
-    // Consume a token from token stream, øker index "Konsumerer"
-    fn consume(&mut self) {
-        self.token_index += 1;
-    }
-
-    // Peek en token, returnerer den, advancer ikke token_stream
-    fn peek(&mut self, offset: usize) -> Option<&Token> {
-        if self.token_index + offset >= self.token_stream.len() {
-            return None;
-        }
-        return self.token_stream.get(self.token_index + offset);
-    }
-
-    // Forvent token, e.g ved funksjoner forventes en struktur
-    fn expect(&mut self, expected: TokenType) -> Result<(), String> {
-        // Checks the current token
-        match self.peek(0) {
-            Some(token) if token.token_type == expected => Ok(()),
-            Some(token) => Err(format!("Expected {:?} but found {:?}", expected, token)),
-            None => Err("Unexpected stream end".to_string()),
-        }
-    }
-
     // Expr er nå kun i32
     fn parse_expression(&mut self) -> Option<ExprNode> {
         // Bekrefter at token vil ha en verdi
@@ -81,6 +48,45 @@ impl Parser {
             return None;
         }
 
+        let current_token = self.peek(0).expect("Token is None");
+
+        match current_token.token_type {
+            TokenType::IntLit => self.parse_integer(),
+            TokenType::BitComplement | TokenType::Minus | TokenType::Not => {
+                self.parse_unary_operation()
+            }
+            _ => None,
+        }
+    }
+
+    fn parse_unary_operation(&mut self) -> Option<ExprNode> {
+        let current_token = self.peek(0).expect("Token is None");
+        match current_token.token_type {
+            TokenType::BitComplement | TokenType::Minus | TokenType::Not => {
+                // Current op: ~, - || !
+                let operator = current_token.clone();
+
+                // Consume operand
+                self.consume();
+
+                // Want to parse the expression recursively
+                let operand = self.parse_expression();
+
+                // Create expression node
+                Some(ExprNode {
+                    expr: Expr::UnaryOp(operator.token_type, operand.map(Box::new)),
+                })
+            }
+            _ => {
+                println!(
+                    "Error: Expected a unary operator, found {:?}",
+                    current_token.token_type
+                );
+                None
+            }
+        }
+    }
+    fn parse_integer(&mut self) -> Option<ExprNode> {
         // Forventer at Expr skal være et heltall
         if let Err(error) = self.expect(TokenType::IntLit) {
             println!("Error {}", error);
@@ -241,7 +247,7 @@ impl Parser {
 }
 
 // Fra ChatGPT
-
+/*
 impl ProgramNode {
     pub fn walk_and_print(&self) {
         for function in &self.body {
@@ -284,3 +290,4 @@ impl ExprNode {
         }
     }
 }
+*/
