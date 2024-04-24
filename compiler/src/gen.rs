@@ -14,7 +14,7 @@ impl ExprNode {
                 }
                 TokenType::BitComplement => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
-                    format!("{}\n\tnot x0, x0", expr_asm)
+                    format!("{}\n\tmvn x0, x0", expr_asm)
                 }
                 TokenType::Not => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
