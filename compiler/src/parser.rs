@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{self, Token, TokenType};
 
 pub enum Expr {
     Number(i32),
@@ -8,8 +8,19 @@ pub struct ExprNode {
     pub expr: Expr,
 }
 
+//REFACTOR: Split into AssignmentStruct for å øke lesbarhet
+// Og en eventuell enum for å holde de forskjellige verdiene som kan tilegnes Ident
 pub enum Statement {
     Return(ExprNode),
+    // Assignment(AssignmentConstruct),
+}
+
+pub struct AssignmentConstruct {
+    data_type: TokenType,
+    var_name: TokenType,
+    assignment: TokenType,
+    var_val: String,
+    semi: TokenType,
 }
 
 pub struct StatementNode {
@@ -189,7 +200,7 @@ impl Parser {
             println!("Error {}", error);
             return None;
         } // {
-          // Consume RBrace
+          // Consume LBrace
         self.consume();
 
         // For flere statements så må det være en løkke som pusher alle statements på listen

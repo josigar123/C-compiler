@@ -6,7 +6,33 @@ mod parser;
 mod token;
 
 // Loggfør ish 2 timer 30 min for lørdag 20.april 16:00 -18:30
+// Loggfør 30min ish for søndat 21.april 15:30-16:00, merk denne dag! I dag har vi en fungerende
+// kompilator for verdens enkleste program!
 fn main() {
+    let mut test_tokens: Vec<token::Token> = vec![];
+
+    test_tokens = test_lexer("tests/lexer_tests/new_token_test.c");
+    print_tokens(test_tokens);
+}
+
+pub fn test_lexer(lex_this: &str) -> Vec<token::Token> {
+    let mut lexemes: Vec<String> = vec![];
+    let mut tokens: Vec<token::Token> = vec![];
+
+    lexemes = lex::get_lexemes(lex_this);
+    tokens = lex::tokenize_lexemes(lexemes);
+
+    tokens
+}
+
+pub fn print_tokens(tokens: Vec<token::Token>) {
+    for token in &tokens {
+        println!("Value: {:?}\nType: {:?}", token.value, token.token_type);
+        println!();
+    }
+}
+
+pub fn compile() {
     // Lexing
     let return_int = "tests/parser_tests/return_int.c";
     let output_assembly_path = "bin/out.s";

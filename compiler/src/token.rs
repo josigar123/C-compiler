@@ -29,13 +29,14 @@ pub enum TokenType {
     Div,    // /
     Mul,    // *
     Assign, // =
-    Negate, // !
+    Not,    // !
     And,    // &&
     Or,     // ||
     BitAnd, // &
     BitOr,  // |
     Xor,    // ^
     Mod,    // %
+    BitComplement,
     // Comparators
     Eq,  // ==
     Lt,  // <
@@ -121,7 +122,8 @@ lazy_static! {
         map.insert("|", TokenType::BitOr);
         map.insert("&", TokenType::BitAnd);
         map.insert("^", TokenType::Xor);
-        map.insert("!", TokenType::Negate);
+        map.insert("!", TokenType::Not);
+        map.insert("~", TokenType::BitComplement);
         map
     };
 }
@@ -153,7 +155,7 @@ lazy_static! {
         map.insert(">=", TokenType::Ge);
         map.insert("!=", TokenType:: Neq);
         // A small union with the operators, needed for the != check
-        map.insert("!", TokenType::Negate);
+        map.insert("!", TokenType::Not);
         map
     };
 }
