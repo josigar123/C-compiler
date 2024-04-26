@@ -12,6 +12,9 @@ mod token;
 // kompilator for verdens enkleste program!
 
 // start 16:00 onsdag 24 april, ferdig med 3 unary ops 18:20, kan relativt greit legge inn flere
+
+// Loggfør 2t fr 26 april fra 17:00 - 19:00
+// TODO: Implementer parse_expression_refactor og håp på det beste ved testing
 fn main() {
     //let mut test_tokens: Vec<token::Token> = vec![];
 

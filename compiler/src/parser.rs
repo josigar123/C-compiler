@@ -1,28 +1,23 @@
 use crate::token::{Token, TokenType};
 
-pub enum Expr {
-    Number(i32),
-    UnaryOp(TokenType, Option<Box<ExprNode>>),
-}
-
-pub struct ExprNode {
-    pub expr: Expr,
-}
-
+#[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Return(ExprNode),
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct StatementNode {
     pub statement: Statement,
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct FunctionNode {
     pub return_value: TokenType,
     pub name: String, // Kan evt være expected tokentype Ident
     pub body: Vec<StatementNode>,
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct ProgramNode {
     pub body: Vec<FunctionNode>,
 }
@@ -57,6 +52,77 @@ impl Parser {
             }
             _ => None,
         }
+    }
+
+    fn parse_term(&mut self) -> Option<ExprNode> {
+        // Parser for factor
+        let factor = self.parse_factor();
+
+        // Placeholder value
+        let mut complete_factor = factor.clone();
+        // Skal peke på neste token i stream
+        let mut current_token = self.peek(0).expect("Token is None");
+        // Vil parse så lenge det er enten  * || /
+        while current_token.token_type == TokenType::Mul
+            || current_token.token_type == TokenType::Div
+        {
+            let operator = current_token.token_type.clone();
+            self.consume(); // Spiser enten * || /
+            let next_factor = self.parse_factor();
+            complete_factor = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(factor.clone().expect("Factor failed")),
+                    Box::new(next_factor.expect("Next factor failed")),
+                ),
+            });
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_factor
+    }
+
+    fn parse_factor(&mut self) -> Option<ExprNode> {
+        /*En faktor kan være:
+           (expr),
+           UnaryOp,
+           Int
+        */
+        // Current tok vi kan matche på
+        let current_token = self.peek(0).expect("Token is None");
+
+        match current_token.token_type {
+            // "(" <expr> ")" case
+            TokenType::LParen => {
+                self.consume(); // Consume '(' token
+                let expression = self.parse_expression_refactor(); // Parse for nested expression
+                self.consume(); // Consume expression node
+
+                // Should expect ')'
+                if let Err(error) = self.expect(TokenType::RParen) {
+                    println!("Error {}", error);
+                    return None;
+                }
+
+                // Consumer ')'
+                self.consume();
+                expression
+            }
+            // Unary Op case
+            TokenType::BitComplement | TokenType::Minus | TokenType::Not => {
+                self.parse_unary_operation()
+            }
+            // IntLit case
+            TokenType::IntLit => self.parse_integer(),
+            _ => {
+                println!("Expected factor, founc {:?}", current_token.token_type);
+                None
+            }
+        }
+    }
+
+    fn parse_expression_refactor(&mut self) -> Option<ExprNode> {
+        unimplemented!();
     }
 
     fn parse_unary_operation(&mut self) -> Option<ExprNode> {
