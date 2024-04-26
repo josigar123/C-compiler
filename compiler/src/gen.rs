@@ -20,8 +20,10 @@ impl ExprNode {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
                     format!("{}\n\tcmp x0, #0\n\tmov x0, #0\n\tcset x0, eq", expr_asm)
                 }
+
                 _ => "Unsupported operator".to_string(),
             },
+            _ => "Not yet implemented".to_string(),
         }
     }
 }

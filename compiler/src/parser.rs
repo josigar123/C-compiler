@@ -1,6 +1,18 @@
 use crate::token::{Token, TokenType};
 
 #[derive(Debug, PartialEq, Clone)]
+pub enum Expr {
+    Number(i32),
+    UnaryOp(TokenType, Option<Box<ExprNode>>),
+    BinaryOp(TokenType, Box<ExprNode>, Box<ExprNode>),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ExprNode {
+    pub expr: Expr,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Return(ExprNode),
 }
@@ -33,24 +45,6 @@ impl Parser {
         Parser {
             token_index: 0,
             token_stream: tokens,
-        }
-    }
-
-    // Expr er nå kun i32
-    fn parse_expression(&mut self) -> Option<ExprNode> {
-        // Bekrefter at token vil ha en verdi
-        if self.token_index >= self.token_stream.len() {
-            return None;
-        }
-
-        let current_token = self.peek(0).expect("Token is None");
-
-        match current_token.token_type {
-            TokenType::IntLit => self.parse_integer(),
-            TokenType::BitComplement | TokenType::Minus | TokenType::Not => {
-                self.parse_unary_operation()
-            }
-            _ => None,
         }
     }
 
@@ -90,13 +84,12 @@ impl Parser {
         */
         // Current tok vi kan matche på
         let current_token = self.peek(0).expect("Token is None");
-
+        println!("Current token: {:?}", current_token.clone());
         match current_token.token_type {
             // "(" <expr> ")" case
             TokenType::LParen => {
                 self.consume(); // Consume '(' token
-                let expression = self.parse_expression_refactor(); // Parse for nested expression
-                self.consume(); // Consume expression node
+                let expression = self.parse_expression(); // Parse for nested expression
 
                 // Should expect ')'
                 if let Err(error) = self.expect(TokenType::RParen) {
@@ -121,8 +114,34 @@ impl Parser {
         }
     }
 
-    fn parse_expression_refactor(&mut self) -> Option<ExprNode> {
-        unimplemented!();
+    fn parse_expression(&mut self) -> Option<ExprNode> {
+        let term = self.parse_term();
+
+        // Placeholder
+        let mut complete_term = term.clone();
+
+        // Skal peke på første token i en expr
+        let mut current_token = self.peek(0).expect("Token is None");
+
+        // Another term while this is true
+        while current_token.token_type == TokenType::Plus
+            || current_token.token_type == TokenType::Minus
+        {
+            let operator = current_token.token_type.clone();
+            // Advance stream
+            self.consume();
+            let next_term = self.parse_term();
+            complete_term = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(term.clone().expect("Term failed")),
+                    Box::new(next_term.expect("Next term failed")),
+                ),
+            });
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_term
     }
 
     fn parse_unary_operation(&mut self) -> Option<ExprNode> {
@@ -311,3 +330,24 @@ impl Parser {
         })
     }
 }
+
+// Unused, tørr bare ikke slette helt enda
+/*
+// Expr er nå kun i32
+fn parse_expression(&mut self) -> Option<ExprNode> {
+    // Bekrefter at token vil ha en verdi
+    if self.token_index >= self.token_stream.len() {
+        return None;
+    }
+
+    let current_token = self.peek(0).expect("Token is None");
+
+    match current_token.token_type {
+        TokenType::IntLit => self.parse_integer(),
+        TokenType::BitComplement | TokenType::Minus | TokenType::Not => {
+            self.parse_unary_operation()
+        }
+        _ => None,
+    }
+}
+*/

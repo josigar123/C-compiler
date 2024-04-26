@@ -21,7 +21,20 @@ fn main() {
     //test_tokens = test_lexer("tests/lexer_tests/new_token_test.c");
     //print_tokens(test_tokens);
 
-    compile();
+    let return_int = "tests/parser_tests/return_int.c";
+    let output_assembly_path = "bin/out.s";
+
+    let mut lexemes: Vec<String> = vec![];
+    let mut tokens: Vec<token::Token> = vec![];
+
+    lexemes = lex::get_lexemes(return_int);
+    tokens = lex::tokenize_lexemes(lexemes);
+
+    let mut parser = parser::Parser::new(tokens);
+
+    let program_node = parser.parse_program().expect("Failed to parse program");
+    println!("{}", program_node);
+    //compile();
 }
 
 pub fn test_lexer(lex_this: &str) -> Vec<token::Token> {

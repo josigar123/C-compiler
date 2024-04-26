@@ -1,4 +1,4 @@
 int main()
 {
-    return 5 + 3;
+    return ((2 + 3) * 6) / 10;
 }
