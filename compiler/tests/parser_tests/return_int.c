@@ -1,4 +1,5 @@
 int main()
 {
-    return ~10;
+    int a = 5;
+
 }

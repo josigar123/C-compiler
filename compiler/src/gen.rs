@@ -1,6 +1,6 @@
 use crate::{
     parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode},
-    token::TokenType,
+    token::{Token, TokenType},
 };
 
 impl ExprNode {
@@ -48,7 +48,11 @@ impl StatementNode {
             Statement::Return(expr_node) => {
                 let expr_asm = expr_node.generate_assembly();
                 format!("{}\n\tret", expr_asm)
-            }
+            },
+            Statement::Assignment(TokenType::IntKeyword, TokenType::Identifier , TokenType::Assign , expr_node) => {
+                let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
+                format!("sub sp, sp, #16\n\t{}\n\tstr x0, [sp,12]\n\tmov x0,0\n\tadd sp, sp, 16\n\tret", expr_asm)
+            } _ => "Unsupported operator".to_string(),
         }
     }
 }

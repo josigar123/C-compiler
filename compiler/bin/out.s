@@ -1,6 +1,9 @@
 	.text
 	.global _main
 _main:
-	mov x0, #10
-	mvn x0, x0
+	sub sp, sp, #16
+	mov x0, #5
+	str x0, [sp,12]
+	mov x0,0
+	add sp, sp, 16
 	ret

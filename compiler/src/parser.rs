@@ -2,7 +2,7 @@ use crate::token::{Token, TokenType};
 
 pub enum Expr {
     Number(i32),
-    UnaryOp(TokenType, Option<Box<ExprNode>>),
+    UnaryOp(TokenType, Option<Box<ExprNode>>), //Int a  = 5;
 }
 
 pub struct ExprNode {
@@ -11,6 +11,11 @@ pub struct ExprNode {
 
 pub enum Statement {
     Return(ExprNode),
+    Assignment(
+        TokenType, 
+        TokenType, 
+        TokenType, 
+        Option<Box<ExprNode>>),
 }
 
 pub struct StatementNode {
@@ -57,6 +62,34 @@ impl Parser {
             }
             _ => None,
         }
+    }
+
+    fn parse_assignment(&mut self) -> Option<StatementNode> {
+        let keyword_type = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::IntKeyword => current_token.clone(),
+            _=> return None,
+        };
+        self.consume();
+
+        let identifier_name = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::Identifier => current_token.clone(),
+            _=> return None,
+        };
+        self.consume();
+
+        let operator = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::Assign => current_token.clone(),
+            _=> return None,
+        };
+        self.consume();
+
+        let assign_value = self.parse_expression();
+        self.consume();
+
+        Some(StatementNode {
+            statement: Statement::Assignment(keyword_type.token_type, identifier_name.token_type, operator.token_type, assign_value.map(Box::new))
+        })
+        
     }
 
     fn parse_unary_operation(&mut self) -> Option<ExprNode> {
@@ -115,39 +148,50 @@ impl Parser {
         })
     }
 
-    fn parse_statement(&mut self) -> Option<StatementNode> {
-        if self.token_index > self.token_stream.len() {
-            return None;
-        }
-
+    fn parse_return(&mut self) -> Option<StatementNode> {
         // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {
             println!("Error {}", error);
             return None;
-        }
-
-        // Move into expression
+                                }
+                
+          // Move into expression
         self.consume();
         let expression;
         if let Some(statement_expression) = self.parse_expression() {
             expression = statement_expression;
         } else {
             println!("Error: Failed to parse expression");
-            return None;
+        return None;
         }
-
+                
         // Neste token er forventet å være semikolon
         if let Err(error) = self.expect(TokenType::Semi) {
             println!("Error {}", error);
-            return None;
+        return None;
         }
-
+                
         // Spiser semikolon
         self.consume();
-
+                
         Some(StatementNode {
             statement: Statement::Return(expression),
         })
+    }
+
+    fn parse_statement(&mut self) -> Option<StatementNode> {
+        if self.token_index > self.token_stream.len() {
+            return None;
+        }
+
+        let current_token = self.peek(0).expect("Token is None");
+        match current_token.token_type {
+            TokenType::IntKeyword => self.parse_assignment(),
+            TokenType::ReturnKeyword => self.parse_return(),
+            _=> None
+        }
+
+
     }
 
     fn parse_function(&mut self) -> Option<FunctionNode> {
@@ -210,7 +254,7 @@ impl Parser {
         self.consume();
 
         // For flere statements så må det være en løkke som pusher alle statements på listen
-        let statement = self.parse_statement();
+        let statement = self.parse_statement(); //se her3 213
 
         if let Err(error) = self.expect(TokenType::RBrace) {
             println!("Error {}", error);
