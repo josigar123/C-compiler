@@ -15,6 +15,9 @@ mod token;
 
 // Loggfør 2t fr 26 april fra 17:00 - 19:00
 // TODO: Implementer parse_expression_refactor og håp på det beste ved testing
+
+// Start 15:25 lørdag 27 april, ferdig 17:25, 2 timer, fikset en stor bug. gjenstår nå å fikse
+// Hvordan unop parses, tror det skal være greiere, orker ikke mer i dag
 fn main() {
     //let mut test_tokens: Vec<token::Token> = vec![];
 
