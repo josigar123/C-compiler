@@ -36,36 +36,30 @@ impl ExprNode {
 
 impl ProgramNode {
     pub fn generate_assembly(&self) -> String {
-        let mut program_text_start = "\t.text\n".to_string();
+        let mut program_body_asm = "\t.text\n".to_string(); // Boilerplate to define texe-section of prog
 
-        // Appending function names
+        // Prepending function names
         for function_name in self.function_names.clone() {
-            program_text_start += &format!("\t.global _{}\n", function_name);
+            program_body_asm += &format!("\t.global _{}\n", function_name);
         }
 
         // Generating assembly for instructions
         for function in self.body.clone() {
-            program_text_start +=
-                &format!("\n_{}:{}\n", function.name, function.generate_assembly());
+            program_body_asm += &format!("\n_{}:{}\n", function.name, function.generate_assembly());
         }
 
-        program_text_start
+        program_body_asm
     }
 }
 
 impl FunctionNode {
     pub fn generate_assembly(&self) -> String {
-        let mut function_text_global_name = "".to_string();
-        // format!("\t.text\n\t.global _{}\n_{}:", self.name, self.name);
+        let mut function_body_asm = "".to_string();
         for statement in &self.body {
-            function_text_global_name = format!(
-                "\n\t{}",
-                //function_text_global_name,
-                statement.generate_assembly()
-            );
+            function_body_asm += &format!("\n\t{}", statement.generate_assembly());
         }
 
-        function_text_global_name
+        function_body_asm
     }
 }
 
