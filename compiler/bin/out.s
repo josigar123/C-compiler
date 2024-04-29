@@ -1,11 +1,26 @@
 	.text
 	.global _main
+	.global _qnaz
+	.global _faz
+	.global _baz
+	.global _chaz
+
 _main:
-	mov x0, #1
+	mov w0, #1
 	ret
-	mov x0, #2
+
+_qnaz:
+	mov w0, #12
 	ret
-	mov x0, #3
+
+_faz:
+	mov w0, #3
 	ret
-	mov x0, #4
+
+_baz:
+	mov w0, #2
+	ret
+
+_chaz:
+	mov w0, #43
 	ret

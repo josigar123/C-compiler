@@ -34,14 +34,33 @@ impl ExprNode {
     }
 }
 
+impl ProgramNode {
+    pub fn generate_assembly(&self) -> String {
+        let mut program_text_start = "\t.text\n".to_string();
+
+        // Appending function names
+        for function_name in self.function_names.clone() {
+            program_text_start += &format!("\t.global _{}\n", function_name);
+        }
+
+        // Generating assembly for instructions
+        for function in self.body.clone() {
+            program_text_start +=
+                &format!("\n_{}:{}\n", function.name, function.generate_assembly());
+        }
+
+        program_text_start
+    }
+}
+
 impl FunctionNode {
     pub fn generate_assembly(&self) -> String {
-        let mut function_text_global_name =
-            format!("\t.text\n\t.global _{}\n_{}:", self.name, self.name);
+        let mut function_text_global_name = "".to_string();
+        // format!("\t.text\n\t.global _{}\n_{}:", self.name, self.name);
         for statement in &self.body {
             function_text_global_name = format!(
-                "{}\n\t{}",
-                function_text_global_name,
+                "\n\t{}",
+                //function_text_global_name,
                 statement.generate_assembly()
             );
         }
@@ -72,9 +91,11 @@ impl Generator {
 
     pub fn walk_da_tree(&self) -> String {
         let mut assembly = "".to_string();
-        for function in &self.root.body {
-            assembly += &function.generate_assembly();
-        }
+        //for function in &self.root.body {
+        //  assembly += &function.generate_assembly();
+        //}
+
+        assembly += &self.root.generate_assembly();
 
         assembly
     }

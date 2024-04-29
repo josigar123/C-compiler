@@ -31,6 +31,7 @@ pub struct FunctionNode {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ProgramNode {
+    pub function_names: Vec<String>, // Stores all function names in program
     pub body: Vec<FunctionNode>,
 }
 
@@ -328,13 +329,16 @@ impl Parser {
         }
 
         let mut function_list: Vec<FunctionNode> = vec![];
+        let mut function_identifiers: Vec<String> = vec![];
 
         while let Some(function) = self.parse_function() {
+            function_identifiers.push(function.name.clone());
             function_list.push(function);
         }
 
         Some(ProgramNode {
             body: function_list,
+            function_names: function_identifiers,
         })
     }
 }
