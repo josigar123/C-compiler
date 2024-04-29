@@ -23,7 +23,13 @@ impl ExprNode {
 
                 _ => "Unsupported operator".to_string(),
             },
-            _ => "Not yet implemented".to_string(),
+            Expr::BinaryOp(operator, left_expr, right_expr) => match operator {
+                TokenType::Plus => unimplemented!(),
+                TokenType::Minus => unimplemented!(),
+                TokenType::Mul => unimplemented!(),
+                TokenType::Div => unimplemented!(),
+                _ => format!("Unsupported operator: {}", operator),
+            },
         }
     }
 }

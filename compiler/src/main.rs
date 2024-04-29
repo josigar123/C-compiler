@@ -16,29 +16,29 @@ fn main() {
     //print_tokens(test_tokens);
 
     let return_int = "tests/parser_tests/return_int.c";
-    let output_assembly_path = "bin/out.s";
+    let _output_assembly_path = "bin/out.s";
 
-    let mut lexemes: Vec<String> = vec![];
-    let mut tokens: Vec<token::Token> = vec![];
+    let mut _lexemes: Vec<String> = vec![];
+    let mut _tokens: Vec<token::Token> = vec![];
 
-    lexemes = lex::get_lexemes(return_int);
-    tokens = lex::tokenize_lexemes(lexemes);
+    _lexemes = lex::get_lexemes(return_int);
+    _tokens = lex::tokenize_lexemes(_lexemes);
 
-    let mut parser = parser::Parser::new(tokens);
+    let mut parser = parser::Parser::new(_tokens);
 
     let program_node = parser.parse_program().expect("Failed to parse program");
     println!("{}", program_node);
-    //compile();
+    compile();
 }
 
 pub fn test_lexer(lex_this: &str) -> Vec<token::Token> {
-    let mut lexemes: Vec<String> = vec![];
-    let mut tokens: Vec<token::Token> = vec![];
+    let mut _lexemes: Vec<String> = vec![];
+    let mut _tokens: Vec<token::Token> = vec![];
 
-    lexemes = lex::get_lexemes(lex_this);
-    tokens = lex::tokenize_lexemes(lexemes);
+    _lexemes = lex::get_lexemes(lex_this);
+    _tokens = lex::tokenize_lexemes(_lexemes);
 
-    tokens
+    _tokens
 }
 
 pub fn print_tokens(tokens: Vec<token::Token>) {
@@ -53,17 +53,19 @@ pub fn compile() {
     let return_int = "tests/parser_tests/return_int.c";
     let output_assembly_path = "bin/out.s";
 
-    let mut lexemes: Vec<String> = vec![];
-    let mut tokens: Vec<token::Token> = vec![];
+    let mut _lexemes: Vec<String> = vec![];
+    let mut _tokens: Vec<token::Token> = vec![];
 
-    lexemes = lex::get_lexemes(return_int);
-    tokens = lex::tokenize_lexemes(lexemes);
+    _lexemes = lex::get_lexemes(return_int);
+    _tokens = lex::tokenize_lexemes(_lexemes);
 
-    let mut parser = parser::Parser::new(tokens);
+    // Parsing
+    let mut parser = parser::Parser::new(_tokens);
 
     let program_node = parser.parse_program().expect("Failed to parse program");
     println!("{}", program_node);
 
+    // Generating
     let generator = gen::Generator::new(program_node);
 
     let asm = generator.walk_da_tree();

@@ -69,7 +69,7 @@ impl fmt::Display for TokenType {
 
 impl fmt::Display for FunctionNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "fn {}() -> {} {{\n", self.name, self.return_value)?;
+        writeln!(f, "fn {}() -> {} {{\n", self.name, self.return_value)?;
         for statement_node in &self.body {
             write!(f, "{}", statement_node)?;
         }
@@ -87,7 +87,7 @@ impl fmt::Display for Statement {
 
 impl fmt::Display for StatementNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "\t{}\n", self.statement)
+        writeln!(f, "\t{}\n", self.statement)
     }
 }
 

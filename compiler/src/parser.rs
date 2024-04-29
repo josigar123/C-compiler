@@ -290,11 +290,23 @@ impl Parser {
             println!("Error {}", error);
             return None;
         } // {
-          // Consume LBrace
+
+        // Consume LBrace
         self.consume();
 
-        // For flere statements så må det være en løkke som pusher alle statements på listen
-        let statement = self.parse_statement();
+        while let Some(statement) = self.parse_statement() {
+            statement_list.push(statement);
+
+            if let Some(token_type) = self
+                .token_stream
+                .get(self.token_index)
+                .map(|t| t.token_type.clone())
+            {
+                if token_type == TokenType::RBrace {
+                    break;
+                }
+            }
+        }
 
         if let Err(error) = self.expect(TokenType::RBrace) {
             println!("Error {}", error);
@@ -303,9 +315,6 @@ impl Parser {
 
         self.consume(); // Consume }
 
-        // Kun 1 statement for nå
-        // Verdt å refaktorere unrap bruken her
-        statement_list.push(statement.unwrap());
         Some(FunctionNode {
             return_value: return_type,
             name: function_name,
