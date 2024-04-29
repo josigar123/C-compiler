@@ -6,7 +6,7 @@ use crate::{
 impl ExprNode {
     pub fn generate_assembly(&self) -> String {
         match &self.expr {
-            Expr::Number(num) => format!("mov x0, #{}", num),
+            Expr::Number(num) => format!("mov w0, #{}", num),
             Expr::UnaryOp(operator, expr) => match operator {
                 TokenType::Minus => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();

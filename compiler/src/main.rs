@@ -7,8 +7,6 @@ mod parser;
 mod pretty_printer;
 mod token;
 
-// LOGGFØR start 17:20 - 18:00, fikset unop parsing, søndag 28 april
-// Enkel fiks parset for en følgene fakto
 fn main() {
     //let mut test_tokens: Vec<token::Token> = vec![];
 
