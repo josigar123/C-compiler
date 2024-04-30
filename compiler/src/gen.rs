@@ -50,7 +50,19 @@ impl ExprNode {
 
                         subtraction_asm
                     }
-                    TokenType::Mul => unimplemented!(),
+                    TokenType::Mul => {
+                        let mut multiplication_asm = "".to_string();
+
+                        let mul_left_expr_asm = left_expr.generate_assembly();
+                        let mul_right_expr_asm = right_expr.generate_assembly();
+
+                        multiplication_asm += &format!(
+                            "{}\n\tstr x0, [sp, #-8]\n\t{}\n\tldr x1, [sp, #-8]\n\tmul x0, x1, x0",
+                            mul_left_expr_asm, mul_right_expr_asm
+                        );
+
+                        multiplication_asm
+                    }
                     TokenType::Div => unimplemented!(),
                     _ => format!("Unsupported operator: {}", operator),
                 }
