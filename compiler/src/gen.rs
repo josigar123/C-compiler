@@ -24,7 +24,21 @@ impl ExprNode {
                 _ => "Unsupported operator".to_string(),
             },
             Expr::BinaryOp(operator, left_expr, right_expr) => match operator {
-                TokenType::Plus => unimplemented!(),
+                TokenType::Plus => {
+                    let mut addition_asm = "".to_string();
+
+                    // Values will lie in x0
+                    let add_left_expr_asm = left_expr.generate_assembly();
+                    let add_right_expr_asm = right_expr.generate_assembly();
+
+                    // Store left_expr_asm on stack, will lie in x0,
+                    addition_asm += &format!(
+                        "{}\n\tstr x0, [sp, #-8]\n\t{}\n\tldr x1, [sp, #-8]\n\tadd x0, x0, x1\n\t",
+                        add_left_expr_asm, add_right_expr_asm
+                    );
+
+                    addition_asm
+                }
                 TokenType::Minus => unimplemented!(),
                 TokenType::Mul => unimplemented!(),
                 TokenType::Div => unimplemented!(),
