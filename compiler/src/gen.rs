@@ -63,6 +63,7 @@ impl ExprNode {
 
                         multiplication_asm
                     }
+
                     TokenType::Div => unimplemented!(),
                     _ => format!("Unsupported operator: {}", operator),
                 }
@@ -122,10 +123,6 @@ impl Generator {
 
     pub fn walk_da_tree(&self) -> String {
         let mut assembly = "".to_string();
-        //for function in &self.root.body {
-        //  assembly += &function.generate_assembly();
-        //}
-
         assembly += &self.root.generate_assembly();
 
         assembly
