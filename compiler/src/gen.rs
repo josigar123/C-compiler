@@ -33,10 +33,7 @@ impl ExprNode {
                         let add_right_expr_asm = right_expr.generate_assembly();
 
                         // Store left_expr_asm on stack, will lie in x0,
-                        addition_asm += &format!(
-                        "{}\n\tstr x0, [sp, #-8]\n\t{}\n\tldr x1, [sp, #-8]\n\tadd x0, x0, x1\n\t",
-                        add_left_expr_asm, add_right_expr_asm
-                    );
+                        addition_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tadd x0, x0,x1\n\tadd sp, sp, 16\n\t", add_left_expr_asm, add_right_expr_asm);
 
                         addition_asm
                     }
@@ -46,7 +43,7 @@ impl ExprNode {
                         let sub_left_expr_asm = left_expr.generate_assembly();
                         let sub_right_expr_asm = right_expr.generate_assembly();
 
-                        subtraction_asm += &format!("{}\n\tstr x0, [sp, #-8]\n\t{}\n\tldr x1, [sp, #-8]\n\tsub x0, x1, x0\n\t", sub_left_expr_asm, sub_right_expr_asm);
+                        subtraction_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tsub x0, x1, x0\n\tadd sp, sp, 16\n\t", sub_left_expr_asm, sub_right_expr_asm);
 
                         subtraction_asm
                     }
@@ -56,10 +53,7 @@ impl ExprNode {
                         let mul_left_expr_asm = left_expr.generate_assembly();
                         let mul_right_expr_asm = right_expr.generate_assembly();
 
-                        multiplication_asm += &format!(
-                            "{}\n\tstr x0, [sp, #-8]\n\t{}\n\tldr x1, [sp, #-8]\n\tmul x0, x1, x0",
-                            mul_left_expr_asm, mul_right_expr_asm
-                        );
+                        multiplication_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\t mul x0, x1, x0\n\tadd sp, sp, 16", mul_left_expr_asm, mul_right_expr_asm);
 
                         multiplication_asm
                     }
