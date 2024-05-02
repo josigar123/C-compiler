@@ -53,22 +53,30 @@ pub fn get_lexemes(source_file: &str) -> Vec<String> {
                 buffer.clear();
             } else if OPERATOR_MAP.contains_key(&ch.to_string().as_str()) {
                 let peek = chars.get(index + 1);
-                match (ch, peek) {
-                    ('|', Some(&'|')) | ('&', Some(&'&')) => {
-                        buffer.push(ch);
-                        buffer.push(*peek.unwrap());
-                        index += 2;
-                    }
-                    (_, _) => {
-                        buffer.push(ch);
-                        index += 1;
+
+                // Case when its comparison
+                if peek == Some(&'=') && ch == '=' {
+                    buffer.push(ch);
+                    buffer.push(*peek.unwrap());
+                    index += 2;
+                } else {
+                    match (ch, peek) {
+                        ('|', Some(&'|')) | ('&', Some(&'&')) => {
+                            buffer.push(ch);
+                            buffer.push(*peek.unwrap());
+                            index += 2;
+                        }
+                        (_, _) => {
+                            buffer.push(ch);
+                            index += 1;
+                        }
                     }
                 }
                 lexemes.push(buffer.clone());
                 buffer.clear();
             } else if COMPARATOR_MAP.contains_key(&ch.to_string().as_str()) {
                 let peek = chars[index + 1];
-                if (ch == '<' || ch == '>' || ch == '!' || ch == '=') && (peek == '=') {
+                if (ch == '<' || ch == '>' || ch == '!') && (peek == '=') {
                     buffer.push(chars[index]);
                     index += 1;
                     buffer.push(chars[index]);
