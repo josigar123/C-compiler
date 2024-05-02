@@ -2,6 +2,18 @@ use crate::{
     parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode},
     token::TokenType,
 };
+use lazy_static::lazy_static;
+use std::sync::{Arc, Mutex};
+
+// A list, treated as a stack to keep track of labels where they are needed, will only contain the last used number of the label
+// Assumes scheme .L1, .L2 etc
+// Is used f.ex to short circ && or ||
+lazy_static! {
+    static ref STACK: Arc<Mutex<Vec<i32>>> = {
+        let stack = Mutex::new(vec![1]);
+        Arc::new(stack)
+    };
+}
 
 impl ExprNode {
     pub fn generate_assembly(&self) -> String {
@@ -102,6 +114,12 @@ impl ExprNode {
                         let or_left_expr_asm = left_expr.generate_assembly();
                         let or_right_expr_asm = right_expr.generate_assembly();
 
+                        let mut stack = STACK.lock().unwrap();
+
+                        // Bør returnere 1 i første omgang
+                        let stack_top = stack.pop();
+                        let free_label = stack_top.unwrap() + 1; // 2 for første label
+
                         or_asm += &format!(
                             "{}
                             \n\tsub sp, sp, #16
@@ -109,20 +127,68 @@ impl ExprNode {
                             \n\t{}
                             \n\tldr x1, [sp, 12]
                             \n\tcmp x1, 0
-                            \n\tbne .L2
+                            \n\tbne .L{} 
                             \n\tcmp x0, 0
-                            \n\tbeq .L3
-                            \n.L2:
+                            \n\tbeq .L{}
+                            \n.L{}:
                             \n\tmov x0, 1
-                            \n\tb   .L4
-                            \n.L3:
+                            \n\tb   .L{}
+                            \n.L{}:
                             \n\tmov x0, 0
-                            \n.L4:
+                            \n.L{}:
                             \n\tadd sp, sp, 16",
-                            or_left_expr_asm, or_right_expr_asm
+                            or_left_expr_asm,
+                            or_right_expr_asm,
+                            free_label,
+                            free_label + 1,
+                            free_label,
+                            free_label + 2,
+                            free_label + 1,
+                            free_label + 2
                         );
 
+                        stack.push(free_label + 2); // Vil være sist brukte label
                         or_asm
+                    }
+
+                    TokenType::And => {
+                        let mut and_asm = "".to_string();
+
+                        let and_left_expr_asm = left_expr.generate_assembly();
+                        let and_right_expr_asm = right_expr.generate_assembly();
+
+                        let mut stack = STACK.lock().unwrap();
+
+                        let stack_top = stack.pop();
+                        let free_label = stack_top.unwrap() + 1; // 5 i første omgang, kanskje
+
+                        and_asm += &format!(
+                            "{}
+                            \n\tsub sp, sp, #16
+                            \n\tstr x0, [sp, 12]
+                            \n\t{}
+                            \n\tldr x1, [sp, 12]
+                            \n\tcmp x1, 0
+                            \n\tbeq .L{}
+                            \n\tcmp x0, 0
+                            \n\tbeq .L{}
+                            \n\tmov x0, 1
+                            \n\tb   .L{}
+                            \n.L{}:
+                            \n\tmov w0, 0
+                            \n.L{}:
+                            \n\tadd sp, sp, 16",
+                            and_left_expr_asm,
+                            and_right_expr_asm,
+                            free_label,
+                            free_label,
+                            free_label + 1,
+                            free_label,
+                            free_label + 1
+                        );
+
+                        stack.push(free_label + 1);
+                        and_asm
                     }
 
                     _ => format!("Unsupported operator: {}", operator),
