@@ -6,7 +6,7 @@ use crate::{
 impl ExprNode {
     pub fn generate_assembly(&self) -> String {
         match &self.expr {
-            Expr::Number(num) => format!("mov w0, #{}", num),
+            Expr::Number(num) => format!("\n\tmov w0, #{}", num),
             Expr::UnaryOp(operator, expr) => match operator {
                 TokenType::Minus => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
@@ -18,7 +18,12 @@ impl ExprNode {
                 }
                 TokenType::Not => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
-                    format!("{}\n\tcmp x0, #0\n\tmov x0, #0\n\tcset x0, eq", expr_asm)
+                    format!(
+                        "{}\n\tcmp x0, #0
+                        \n\tmov x0, #0
+                        \n\tcset x0, eq",
+                        expr_asm
+                    )
                 }
 
                 _ => "Unsupported operator".to_string(),
@@ -33,7 +38,14 @@ impl ExprNode {
                         let add_right_expr_asm = right_expr.generate_assembly();
 
                         // Store left_expr_asm on stack, will lie in x0,
-                        addition_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tadd x0, x0,x1\n\tadd sp, sp, 16\n\t", add_left_expr_asm, add_right_expr_asm);
+                        addition_asm += &format!(
+                            "{}\n\tsub sp, sp, #16
+                            \n\tstr x0, [sp, 12]{}
+                            \n\tldr x1, [sp, 12]
+                            \n\tadd x0, x0,x1
+                            \n\tadd sp, sp, 16",
+                            add_left_expr_asm, add_right_expr_asm
+                        );
 
                         addition_asm
                     }
@@ -43,7 +55,14 @@ impl ExprNode {
                         let sub_left_expr_asm = left_expr.generate_assembly();
                         let sub_right_expr_asm = right_expr.generate_assembly();
 
-                        subtraction_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tsub x0, x1, x0\n\tadd sp, sp, 16\n\t", sub_left_expr_asm, sub_right_expr_asm);
+                        subtraction_asm += &format!(
+                            "{}\n\tsub sp, sp, #16
+                            \n\tstr x0, [sp, 12]
+                            {}\n\tldr x1, [sp, 12]
+                            \n\tsub x0, x1, x0
+                            \n\tadd sp, sp, 16",
+                            sub_left_expr_asm, sub_right_expr_asm
+                        );
 
                         subtraction_asm
                     }
@@ -53,12 +72,29 @@ impl ExprNode {
                         let mul_left_expr_asm = left_expr.generate_assembly();
                         let mul_right_expr_asm = right_expr.generate_assembly();
 
-                        multiplication_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\t mul x0, x1, x0\n\tadd sp, sp, 16", mul_left_expr_asm, mul_right_expr_asm);
+                        multiplication_asm += &format!(
+                            "{}\n\tsub sp, sp, #16
+                            \n\tstr x0, [sp, 12]\n\t{}
+                            \n\tldr x1, [sp, 12]
+                            \n\tmul x0, x1, x0
+                            \n\tadd sp, sp, 16",
+                            mul_left_expr_asm, mul_right_expr_asm
+                        );
 
                         multiplication_asm
                     }
 
-                    TokenType::Div => unimplemented!(),
+                    TokenType::Div => {
+                        let mut division_asm = "".to_string();
+
+                        let div_left_expr_asm = left_expr.generate_assembly();
+                        let div_right_expr_as = right_expr.generate_assembly();
+
+                        division_asm +=
+                            &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tsdiv x0, x1, x0\n\tadd sp, sp, 16", div_left_expr_asm, div_right_expr_as);
+
+                        division_asm
+                    }
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
