@@ -61,7 +61,7 @@ pub fn get_lexemes(source_file: &str) -> Vec<String> {
                     index += 2;
                 } else {
                     match (ch, peek) {
-                        ('|', Some(&'|')) | ('&', Some(&'&')) => {
+                        ('|', Some(&'|')) | ('&', Some(&'&')) | ('!', Some(&'=')) => {
                             buffer.push(ch);
                             buffer.push(*peek.unwrap());
                             index += 2;
