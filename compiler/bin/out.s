@@ -6,7 +6,7 @@ _main:
                         
 	mov w0, #1
                         
-	sub sp, sp, 16
+	sub sp, sp, #16
                         
 	str x0, [sp, 12]
                         
@@ -15,9 +15,9 @@ _main:
                         
 	ldr x1, [sp, 12]
                         
-	cmp x1, x0
+	cmp x0, x1
                         
-	cset x0, eq
+	cset x0, ne
                         
-	add sp, sp, 16
+	add sp, sp , 16
 	ret

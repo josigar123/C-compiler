@@ -3,10 +3,7 @@ use crate::{
     token::TokenType,
 };
 use lazy_static::lazy_static;
-use std::{
-    f32::consts::E,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 // A list, treated as a stack to keep track of labels where they are needed, will only contain the last used number of the label
 // Assumes scheme .L1, .L2 etc
@@ -202,7 +199,7 @@ impl ExprNode {
                         equal_asm += &format!(
                             "
                         {}
-                        \n\tsub sp, sp, 16
+                        \n\tsub sp, sp, #16
                         \n\tstr x0, [sp, 12]
                         \n\t{}
                         \n\tldr x1, [sp, 12]
@@ -213,6 +210,27 @@ impl ExprNode {
                         );
 
                         equal_asm
+                    }
+                    TokenType::Neq => {
+                        let mut not_equal_asm = "".to_string();
+
+                        let not_equal_left_expr_asm = left_expr.generate_assembly();
+                        let not_equal_right_expr_asm = right_expr.generate_assembly();
+
+                        not_equal_asm += &format!(
+                            "
+                        {}
+                        \n\tsub sp, sp, #16
+                        \n\tstr x0, [sp, 12]
+                        \n\t{}
+                        \n\tldr x1, [sp, 12]
+                        \n\tcmp x0, x1
+                        \n\tcset x0, ne
+                        \n\tadd sp, sp , 16",
+                            not_equal_left_expr_asm, not_equal_right_expr_asm
+                        );
+
+                        not_equal_asm
                     }
 
                     _ => format!("Unsupported operator: {}", operator),
