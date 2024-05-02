@@ -4,9 +4,9 @@
 _main:
 	
                         
-	mov w0, #1
+	mov w0, #5
                         
-	sub sp, sp, #16
+	sub sp, sp, 16
                         
 	str x0, [sp, 12]
                         
@@ -15,9 +15,19 @@ _main:
                         
 	ldr x1, [sp, 12]
                         
-	cmp x0, x1
+	cmp x1, x0
                         
-	cset x0, ne
+	blt .L2
                         
-	add sp, sp , 16
+	mov w0, 0
+                        
+	 b .L3
+                        
+.L2:
+                        
+	mov w0, 1
+                        
+.L3:
+                        
+	add sp, sp, 16
 	ret

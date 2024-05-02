@@ -232,6 +232,41 @@ impl ExprNode {
 
                         not_equal_asm
                     }
+                    TokenType::Lt => {
+                        let mut less_than_asm = "".to_string();
+
+                        let mut stack = STACK.lock().unwrap();
+
+                        let stack_top = stack.pop();
+                        let free_label = stack_top.unwrap() + 1;
+
+                        let less_than_left_expr_asm = left_expr.generate_assembly();
+                        let less_than_right_expr_asm = right_expr.generate_assembly();
+                        less_than_asm += &format!(
+                            "
+                        {}
+                        \n\tsub sp, sp, 16
+                        \n\tstr x0, [sp, 12]
+                        \n\t{}
+                        \n\tldr x1, [sp, 12]
+                        \n\tcmp x1, x0
+                        \n\tblt .L{}
+                        \n\tmov w0, 0
+                        \n\t b .L{}
+                        \n.L{}:
+                        \n\tmov w0, 1
+                        \n.L{}:
+                        \n\tadd sp, sp, 16",
+                            less_than_left_expr_asm,
+                            less_than_right_expr_asm,
+                            free_label,
+                            free_label + 1,
+                            free_label,
+                            free_label + 1
+                        );
+                        stack.push(free_label + 1);
+                        less_than_asm
+                    }
 
                     _ => format!("Unsupported operator: {}", operator),
                 }
