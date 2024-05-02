@@ -338,6 +338,42 @@ impl ExprNode {
                         stack.push(free_label + 1);
                         less_eq_than_asm
                     }
+                    TokenType::Ge => {
+                        let mut greater_eq_than_asm = "".to_string();
+
+                        let mut stack = STACK.lock().unwrap();
+
+                        let stack_top = stack.pop();
+                        let free_label = stack_top.unwrap() + 1;
+
+                        let greater_eq_than_left_expr_asm = left_expr.generate_assembly();
+                        let greater_eq_than_right_expr_asm = right_expr.generate_assembly();
+                        greater_eq_than_asm += &format!(
+                            "
+                        {}
+                        \n\tsub sp, sp, #16
+                        \n\tstr x0, [sp, 16]
+                        \n\t{}
+                        \n\tldr x1, [sp, 16]
+                        \n\tcmp x1, x0
+                        \n\tbge .L{}
+                        \n\tmov x0, 0
+                        \n\tb   .L{}
+                        \n.L{}:
+                        \n\tmov x0, 1
+                        \n.L{}:
+                        \n\tadd sp, sp, 16",
+                            greater_eq_than_left_expr_asm,
+                            greater_eq_than_right_expr_asm,
+                            free_label,
+                            free_label + 1,
+                            free_label,
+                            free_label + 1
+                        );
+
+                        stack.push(free_label + 1);
+                        greater_eq_than_asm
+                    }
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
