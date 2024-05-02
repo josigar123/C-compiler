@@ -48,7 +48,124 @@ impl Parser {
             token_stream: tokens,
         }
     }
+    // NEW FEATURE START
 
+    fn parse_or(&mut self) -> Option<ExprNode> {
+        let and = self.parse_and();
+
+        let mut complete_and = and.clone();
+
+        let mut current_token = self.peek(0).expect("Token is None");
+        while current_token.token_type == TokenType::Or {
+            let operator = current_token.token_type.clone();
+            self.consume();
+            let next_and = self.parse_and();
+
+            let new_and = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(complete_and.clone().expect("Incomplete and part")),
+                    Box::new(next_and.expect("Next and part failed")),
+                ),
+            });
+
+            complete_and = new_and.clone();
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_and
+    }
+
+    fn parse_and(&mut self) -> Option<ExprNode> {
+        let eqality = self.parse_eqality();
+
+        let mut complete_equality = eqality.clone();
+
+        let mut current_token = self.peek(0).expect("Token is None");
+        while current_token.token_type == TokenType::And {
+            let operator = current_token.token_type.clone();
+            self.consume();
+            let next_equality = self.parse_eqality();
+
+            let new_equality = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(complete_equality.clone().expect("Incomplete equality part")),
+                    Box::new(next_equality.expect("Next equality part failed")),
+                ),
+            });
+
+            complete_equality = new_equality.clone();
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_equality
+    }
+
+    fn parse_eqality(&mut self) -> Option<ExprNode> {
+        let relational = self.parse_relation();
+
+        let mut complete_relational = relational.clone();
+
+        let mut current_token = self.peek(0).expect("Token is None");
+        while current_token.token_type == TokenType::Eq
+            || current_token.token_type == TokenType::Neq
+        {
+            let operator = current_token.token_type.clone();
+            self.consume();
+            let next_relational = self.parse_relation();
+
+            let new_relational = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(
+                        complete_relational
+                            .clone()
+                            .expect("Incomplete relational part"),
+                    ),
+                    Box::new(next_relational.expect("Next relational part failed")),
+                ),
+            });
+
+            complete_relational = new_relational.clone();
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_relational
+    }
+
+    fn parse_relation(&mut self) -> Option<ExprNode> {
+        let additive = self.parse_expression();
+
+        let mut complete_additive = additive.clone();
+
+        let mut current_token = self.peek(0).expect("Token is None");
+        while current_token.token_type == TokenType::Lt
+            || current_token.token_type == TokenType::Gt
+            || current_token.token_type == TokenType::Le
+            || current_token.token_type == TokenType::Ge
+        {
+            let operator = current_token.token_type.clone();
+            self.consume(); // consume operator
+            let next_additive = self.parse_expression();
+
+            let new_additive = Some(ExprNode {
+                expr: Expr::BinaryOp(
+                    operator,
+                    Box::new(complete_additive.clone().expect("Incomplete additive part")),
+                    Box::new(next_additive.expect("Next additive part failed")),
+                ),
+            });
+
+            complete_additive = new_additive.clone();
+
+            current_token = self.peek(0).expect("Token is None");
+        }
+
+        complete_additive
+    }
+
+    // NEW FEATURE END
     fn parse_term(&mut self) -> Option<ExprNode> {
         // Parser for factor
         let factor = self.parse_factor();
@@ -87,7 +204,7 @@ impl Parser {
             // "(" <expr> ")" case
             TokenType::LParen => {
                 self.consume(); // Consume '(' token
-                let expression = self.parse_expression(); // Parse for nested expression
+                let expression = self.parse_or(); // Parse for nested expression
 
                 // Should expect ')'
                 if let Err(error) = self.expect(TokenType::RParen) {
@@ -214,7 +331,7 @@ impl Parser {
         // Move into expression
         self.consume();
         let expression;
-        if let Some(statement_expression) = self.parse_expression() {
+        if let Some(statement_expression) = self.parse_or() {
             expression = statement_expression;
         } else {
             println!("Error: Failed to parse expression");

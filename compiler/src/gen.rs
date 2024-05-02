@@ -95,6 +95,18 @@ impl ExprNode {
 
                         division_asm
                     }
+
+                    TokenType::Or => {
+                        let mut or_asm = "".to_string();
+
+                        let or_left_expr_asm = left_expr.generate_assembly();
+                        let or_right_expr_asm = right_expr.generate_assembly();
+
+                        or_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\torr x0, x1, x0\n\tadd sp, sp, 16", or_left_expr_asm, or_right_expr_asm);
+
+                        or_asm
+                    }
+
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
