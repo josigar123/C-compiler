@@ -2,5 +2,5 @@
 int main()
 {
 
-    return 2 * 10 >= 2 + 1;
+    return 1 != 2;
 }
