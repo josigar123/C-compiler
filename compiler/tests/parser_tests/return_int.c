@@ -2,5 +2,5 @@
 int main()
 {
 
-    return 3 || 0;
+    return 0 || 0;
 }

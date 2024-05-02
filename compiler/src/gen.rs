@@ -102,7 +102,25 @@ impl ExprNode {
                         let or_left_expr_asm = left_expr.generate_assembly();
                         let or_right_expr_asm = right_expr.generate_assembly();
 
-                        or_asm += &format!("{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\torr x0, x1, x0\n\tadd sp, sp, 16", or_left_expr_asm, or_right_expr_asm);
+                        or_asm += &format!(
+                            "{}
+                            \n\tsub sp, sp, #16
+                            \n\tstr x0, [sp, 12]
+                            \n\t{}
+                            \n\tldr x1, [sp, 12]
+                            \n\tcmp x1, 0
+                            \n\tbne .L2
+                            \n\tcmp x0, 0
+                            \n\tbeq .L3
+                            \n.L2:
+                            \n\tmov x0, 1
+                            \n\tb   .L4
+                            \n.L3:
+                            \n\tmov x0, 0
+                            \n.L4:
+                            \n\tadd sp, sp, 16",
+                            or_left_expr_asm, or_right_expr_asm
+                        );
 
                         or_asm
                     }
