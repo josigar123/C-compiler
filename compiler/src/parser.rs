@@ -48,7 +48,11 @@ impl Parser {
             token_stream: tokens,
         }
     }
-    // NEW FEATURE START
+
+    // Function to increase readability
+    fn parse_expression(&mut self) -> Option<ExprNode> {
+        self.parse_or()
+    }
 
     fn parse_or(&mut self) -> Option<ExprNode> {
         let and = self.parse_and();
@@ -135,8 +139,7 @@ impl Parser {
     }
 
     fn parse_relation(&mut self) -> Option<ExprNode> {
-        let additive = self.parse_expression();
-
+        let additive = self.parse_add();
         let mut complete_additive = additive.clone();
 
         let mut current_token = self.peek(0).expect("Token is None");
@@ -147,8 +150,8 @@ impl Parser {
         {
             let operator = current_token.token_type.clone();
             self.consume(); // consume operator
-            let next_additive = self.parse_expression();
 
+            let next_additive = self.parse_add();
             let new_additive = Some(ExprNode {
                 expr: Expr::BinaryOp(
                     operator,
@@ -165,12 +168,11 @@ impl Parser {
         complete_additive
     }
 
-    // NEW FEATURE END
     fn parse_term(&mut self) -> Option<ExprNode> {
         // Parser for factor
         let factor = self.parse_factor();
 
-        // Placeholder, en finere måte å gjøre det på?
+        // Placeholder, en finere måte å gjøre det på? Nei
         let mut complete_factor = factor.clone();
 
         // Skal peke på neste token i stream
@@ -204,7 +206,8 @@ impl Parser {
             // "(" <expr> ")" case
             TokenType::LParen => {
                 self.consume(); // Consume '(' token
-                let expression = self.parse_or(); // Parse for nested expression
+
+                let expression = self.parse_expression();
 
                 // Should expect ')'
                 if let Err(error) = self.expect(TokenType::RParen) {
@@ -229,7 +232,7 @@ impl Parser {
         }
     }
 
-    fn parse_expression(&mut self) -> Option<ExprNode> {
+    fn parse_add(&mut self) -> Option<ExprNode> {
         let term = self.parse_term();
 
         // Placeholder
@@ -331,7 +334,7 @@ impl Parser {
         // Move into expression
         self.consume();
         let expression;
-        if let Some(statement_expression) = self.parse_or() {
+        if let Some(statement_expression) = self.parse_expression() {
             expression = statement_expression;
         } else {
             println!("Error: Failed to parse expression");
