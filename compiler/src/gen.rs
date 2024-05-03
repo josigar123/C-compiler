@@ -18,7 +18,10 @@ lazy_static! {
 impl ExprNode {
     pub fn generate_assembly(&self) -> String {
         match &self.expr {
-            Expr::Number(num) => format!("\n\tmov w0, #{}", num),
+            Expr::Number(num) => {
+                println!("Generating for integer");
+                format!("\n\tmov w0, #{}", num)
+            }
             Expr::UnaryOp(operator, expr) => match operator {
                 TokenType::Minus => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
@@ -233,15 +236,20 @@ impl ExprNode {
                         not_equal_asm
                     }
                     TokenType::Lt => {
+                        println!("In expr for Lt");
                         let mut less_than_asm = "".to_string();
 
+                        println!("Generating left expr start");
+                        let less_than_left_expr_asm = left_expr.generate_assembly();
+                        println!("left expr generated lt");
+                        let less_than_right_expr_asm = right_expr.generate_assembly();
+                        println!("right expr generated lt");
+                        println!("LOCKING STACK");
                         let mut stack = STACK.lock().unwrap();
-
+                        println!("STACK is locked");
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let less_than_left_expr_asm = left_expr.generate_assembly();
-                        let less_than_right_expr_asm = right_expr.generate_assembly();
                         less_than_asm += &format!(
                             "
                         {}
@@ -264,19 +272,23 @@ impl ExprNode {
                             free_label,
                             free_label + 1
                         );
+
+                        println!("Asm has been generated lt");
+                        println!("stack is about to go out of scope");
                         stack.push(free_label + 1);
                         less_than_asm
                     }
                     TokenType::Gt => {
                         let mut greater_than_asm = "".to_string();
+                        println!("In expr for Gt");
 
+                        let greater_than_left_expr_asm = left_expr.generate_assembly();
+                        let greater_than_right_expr_asm = right_expr.generate_assembly();
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let greater_than_left_expr_asm = left_expr.generate_assembly();
-                        let greater_than_right_expr_asm = right_expr.generate_assembly();
                         greater_than_asm += &format!(
                             "
                         {}
@@ -303,15 +315,16 @@ impl ExprNode {
                         greater_than_asm
                     }
                     TokenType::Le => {
+                        println!("In expr for Le");
                         let mut less_eq_than_asm = "".to_string();
 
+                        let less_eq_than_left_expr_asm = left_expr.generate_assembly();
+                        let less_eq_than_right_expr_asm = right_expr.generate_assembly();
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let less_eq_than_left_expr_asm = left_expr.generate_assembly();
-                        let less_eq_than_right_expr_asm = right_expr.generate_assembly();
                         less_eq_than_asm += &format!(
                             "
                         {}
@@ -339,15 +352,16 @@ impl ExprNode {
                         less_eq_than_asm
                     }
                     TokenType::Ge => {
+                        println!("In expr for Ge");
                         let mut greater_eq_than_asm = "".to_string();
 
+                        let greater_eq_than_left_expr_asm = left_expr.generate_assembly();
+                        let greater_eq_than_right_expr_asm = right_expr.generate_assembly();
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let greater_eq_than_left_expr_asm = left_expr.generate_assembly();
-                        let greater_eq_than_right_expr_asm = right_expr.generate_assembly();
                         greater_eq_than_asm += &format!(
                             "
                         {}
@@ -383,6 +397,7 @@ impl ExprNode {
 
 impl ProgramNode {
     pub fn generate_assembly(&self) -> String {
+        println!("In program node asm gen");
         let mut program_body_asm = "\t.text\n".to_string(); // Boilerplate to define texe-section of prog
 
         // Prepending function names
@@ -402,6 +417,7 @@ impl ProgramNode {
 impl FunctionNode {
     pub fn generate_assembly(&self) -> String {
         let mut function_body_asm = "".to_string();
+        println!("In function node asm gen");
         for statement in &self.body {
             function_body_asm += &format!("\n\t{}", statement.generate_assembly());
         }
@@ -414,6 +430,7 @@ impl StatementNode {
     pub fn generate_assembly(&self) -> String {
         match &self.statement {
             Statement::Return(expr_node) => {
+                println!("In statement node asm gen");
                 let expr_asm = expr_node.generate_assembly();
                 format!("{}\n\tret", expr_asm)
             }

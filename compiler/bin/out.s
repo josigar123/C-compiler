@@ -3,85 +3,162 @@
 
 _main:
 	
+                        
+                        
+                        
+                        
+                        
+                        
 	mov w0, #1
-	sub sp, sp, #16
-                            
+                        
+	sub sp, sp, 16
+                        
 	str x0, [sp, 12]
-	mov w0, #2
-	sub sp, sp, #16
-                            
-	str x0, [sp, 12]
+                        
 	
 	mov w0, #2
-                            
+                        
 	ldr x1, [sp, 12]
-                            
-	mul x0, x1, x0
-                            
-	add sp, sp, 16
-                            
-	ldr x1, [sp, 12]
-                            
-	add x0, x0,x1
-                            
-	add sp, sp, 16
-                            
-	sub sp, sp, #16
-                            
-	str x0, [sp, 12]
-                            
-	
-	mov w0, #3
-	sub sp, sp, #16
-                            
-	str x0, [sp, 12]
-	mov w0, #3
-	mvn x0, x0
-                            
-	ldr x1, [sp, 12]
-                            
-	add x0, x0,x1
-                            
-	add sp, sp, 16
-	sub sp, sp, #16
-                            
-	str x0, [sp, 12]
-                            
-	mov w0, #1
-	sub sp, sp, #16
-	str x0, [sp, 12]
-	
-	mov w0, #3
-	neg x0, x0
-	ldr x1, [sp, 12]
-	sdiv x0, x1, x0
-	add sp, sp, 16
-	ldr x1, [sp, 12]
-                            
-	sub x0, x1, x0
-                            
-	add sp, sp, 16
-                            
-	ldr x1, [sp, 12]
-                            
-	cmp x1, 0
-                            
-	beq .L2
-                            
-	cmp x0, 0
-                            
-	beq .L2
-                            
-	mov x0, 1
-                            
-	b   .L3
-                            
-.L2:
-                            
+                        
+	cmp x1, x0
+                        
+	blt .L2
+                        
 	mov w0, 0
-                            
+                        
+	 b .L3
+                        
+.L2:
+                        
+	mov w0, 1
+                        
 .L3:
-                            
+                        
+	add sp, sp, 16
+                        
+	sub sp, sp, 16
+                        
+	str x0, [sp, 12]
+                        
+	
+	mov w0, #3
+                        
+	ldr x1, [sp, 12]
+                        
+	cmp x1, x0
+                        
+	blt .L4
+                        
+	mov w0, 0
+                        
+	 b .L5
+                        
+.L4:
+                        
+	mov w0, 1
+                        
+.L5:
+                        
+	add sp, sp, 16
+                        
+	sub sp, sp, 16
+                        
+	str x0, [sp, 12]
+                        
+	
+	mov w0, #4
+                        
+	ldr x1, [sp, 12]
+                        
+	cmp x1, x0
+                        
+	blt .L6
+                        
+	mov w0, 0
+                        
+	 b .L7
+                        
+.L6:
+                        
+	mov w0, 1
+                        
+.L7:
+                        
+	add sp, sp, 16
+                        
+	sub sp, sp, 16
+                        
+	str x0, [sp, 12]
+                        
+	
+	mov w0, #5
+                        
+	ldr x1, [sp, 12]
+                        
+	cmp x1, x0
+                        
+	bgt .L8
+                        
+	mov w0, 0
+                        
+	 b .L9
+                        
+.L8:
+                        
+	mov w0, 1
+                        
+.L9:
+                        
+	add sp, sp, 16
+                        
+	sub sp, sp, #16
+                        
+	str x0, [sp, 16]
+                        
+	
+	mov w0, #6
+                        
+	ldr x1, [sp, 16]
+                        
+	cmp x1, x0
+                        
+	ble .L10
+                        
+	mov x0, 0
+                        
+	b   .L11
+                        
+.L10:
+                        
+	mov x0, 1
+                        
+.L11:
+                        
+	add sp, sp, 16
+                        
+	sub sp, sp, #16
+                        
+	str x0, [sp, 16]
+                        
+	
+	mov w0, #0
+                        
+	ldr x1, [sp, 16]
+                        
+	cmp x1, x0
+                        
+	bge .L12
+                        
+	mov x0, 0
+                        
+	b   .L13
+                        
+.L12:
+                        
+	mov x0, 1
+                        
+.L13:
+                        
 	add sp, sp, 16
                             
 	sub sp, sp, #16
@@ -91,30 +168,8 @@ _main:
 	
                         
                         
-	mov w0, #2
                         
-	sub sp, sp, #16
-                        
-	str x0, [sp, 12]
-                        
-	
 	mov w0, #1
-                        
-	ldr x1, [sp, 12]
-                        
-	cmp x0, x1
-                        
-	cset x0, ne
-                        
-	add sp, sp , 16
-                        
-	sub sp, sp, #16
-                        
-	str x0, [sp, 12]
-                        
-	
-                        
-	mov w0, #0
                         
 	sub sp, sp, #16
                         
@@ -127,19 +182,26 @@ _main:
                         
 	cmp x1, x0
                         
-	ble .L4
+	ble .L14
                         
 	mov x0, 0
                         
-	b   .L5
+	b   .L15
                         
-.L4:
+.L14:
                         
 	mov x0, 1
                         
-.L5:
+.L15:
                         
 	add sp, sp, 16
+                        
+	sub sp, sp, #16
+                        
+	str x0, [sp, 12]
+                        
+	
+	mov w0, #1
                         
 	ldr x1, [sp, 12]
                         
@@ -148,85 +210,89 @@ _main:
 	cset x0, eq
                         
 	add sp, sp, 16
-                            
-	ldr x1, [sp, 12]
-                            
-	cmp x1, 0
-                            
-	bne .L6 
-                            
-	cmp x0, 0
-                            
-	beq .L7
-                            
-.L6:
-                            
-	mov x0, 1
-                            
-	b   .L8
-                            
-.L7:
-                            
-	mov x0, 0
-                            
-.L8:
-                            
-	add sp, sp, 16
-                            
+                        
+	sub sp, sp, #16
+                        
+	str x0, [sp, 12]
+                        
+	
+	mov w0, #33
 	sub sp, sp, #16
                             
 	str x0, [sp, 12]
-                            
-	
-                        
-	mov w0, #2
-                        
-	sub sp, sp, #16
-                        
-	str x0, [sp, 16]
-                        
-	
 	mov w0, #1
-                        
-	ldr x1, [sp, 16]
-                        
-	cmp x1, x0
-                        
-	bge .L9
-                        
-	mov x0, 0
-                        
-	b   .L10
-                        
-.L9:
-                        
-	mov x0, 1
-                        
-.L10:
-                        
+                            
+	ldr x1, [sp, 12]
+                            
+	add x0, x0,x1
+                            
 	add sp, sp, 16
+	sub sp, sp, #16
+                            
+	str x0, [sp, 12]
+	mov w0, #2
+	sub sp, sp, #16
+                            
+	str x0, [sp, 12]
+	
+	mov w0, #23
+	sub sp, sp, #16
+                            
+	str x0, [sp, 12]
+	mov w0, #2
+                            
+	ldr x1, [sp, 12]
+                            
+	add x0, x0,x1
+                            
+	add sp, sp, 16
+                            
+	ldr x1, [sp, 12]
+                            
+	mul x0, x1, x0
+                            
+	add sp, sp, 16
+	sub sp, sp, #16
+	str x0, [sp, 12]
+	
+	mov w0, #5
+	ldr x1, [sp, 12]
+	sdiv x0, x1, x0
+	add sp, sp, 16
+                            
+	ldr x1, [sp, 12]
+                            
+	add x0, x0,x1
+                            
+	add sp, sp, 16
+                        
+	ldr x1, [sp, 12]
+                        
+	cmp x0, x1
+                        
+	cset x0, ne
+                        
+	add sp, sp , 16
                             
 	ldr x1, [sp, 12]
                             
 	cmp x1, 0
                             
-	bne .L11 
+	beq .L16
                             
 	cmp x0, 0
                             
-	beq .L12
-                            
-.L11:
+	beq .L16
                             
 	mov x0, 1
                             
-	b   .L13
+	b   .L17
                             
-.L12:
+.L16:
                             
-	mov x0, 0
+	mov w0, 0
                             
-.L13:
+.L17:
                             
 	add sp, sp, 16
 	ret
