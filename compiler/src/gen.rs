@@ -235,13 +235,14 @@ impl ExprNode {
                     TokenType::Lt => {
                         let mut less_than_asm = "".to_string();
 
+                        let less_than_left_expr_asm = left_expr.generate_assembly();
+                        let less_than_right_expr_asm = right_expr.generate_assembly();
+
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let less_than_left_expr_asm = left_expr.generate_assembly();
-                        let less_than_right_expr_asm = right_expr.generate_assembly();
                         less_than_asm += &format!(
                             "
                         {}
@@ -270,13 +271,14 @@ impl ExprNode {
                     TokenType::Gt => {
                         let mut greater_than_asm = "".to_string();
 
+                        let greater_than_left_expr_asm = left_expr.generate_assembly();
+                        let greater_than_right_expr_asm = right_expr.generate_assembly();
+
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let greater_than_left_expr_asm = left_expr.generate_assembly();
-                        let greater_than_right_expr_asm = right_expr.generate_assembly();
                         greater_than_asm += &format!(
                             "
                         {}
@@ -305,13 +307,14 @@ impl ExprNode {
                     TokenType::Le => {
                         let mut less_eq_than_asm = "".to_string();
 
+                        let less_eq_than_left_expr_asm = left_expr.generate_assembly();
+                        let less_eq_than_right_expr_asm = right_expr.generate_assembly();
+
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let less_eq_than_left_expr_asm = left_expr.generate_assembly();
-                        let less_eq_than_right_expr_asm = right_expr.generate_assembly();
                         less_eq_than_asm += &format!(
                             "
                         {}
@@ -341,13 +344,14 @@ impl ExprNode {
                     TokenType::Ge => {
                         let mut greater_eq_than_asm = "".to_string();
 
+                        let greater_eq_than_left_expr_asm = left_expr.generate_assembly();
+                        let greater_eq_than_right_expr_asm = right_expr.generate_assembly();
+
                         let mut stack = STACK.lock().unwrap();
 
                         let stack_top = stack.pop();
                         let free_label = stack_top.unwrap() + 1;
 
-                        let greater_eq_than_left_expr_asm = left_expr.generate_assembly();
-                        let greater_eq_than_right_expr_asm = right_expr.generate_assembly();
                         greater_eq_than_asm += &format!(
                             "
                         {}
