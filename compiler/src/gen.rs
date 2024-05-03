@@ -420,6 +420,42 @@ impl StatementNode {
                 let expr_asm = expr_node.generate_assembly();
                 format!("{}\n\tret", expr_asm)
             }
+
+            Statement::Assignment(
+                TokenType::IntKeyword,
+                TokenType::Identifier,
+                TokenType::Assign,
+                expr_node,
+            ) => {
+                let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
+                format!(
+                    "\n\tsub sp, sp, #16
+                    \n\t{}
+                    \n\t
+                    str x0, [sp,12]
+                    \n\tmov x0, 0
+                    \n\tadd sp, sp, 16\n\t",
+                    expr_asm
+                )
+            }
+            Statement::Assignment(
+                TokenType::CharKeyword,
+                TokenType::Identifier,
+                TokenType::Assign,
+                expr_node,
+            ) => {
+                let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
+                format!(
+                    "\n\tsub sp, sp, #16
+                    \n\t{}
+                    \n\t
+                    str x0, [sp,12]
+                    \n\tmov x0, 0
+                    \n\tadd sp, sp, 16\n\t",
+                    expr_asm
+                )
+            }
+            _ => "Unsupported statement".to_string(),
         }
     }
 }

@@ -7,7 +7,6 @@ mod parser;
 mod pretty_printer;
 mod token;
 
-// Bug på generering av flere statements i gen når jeg prøver flere returns i flere funksjoner
 fn main() {
     compile();
 }

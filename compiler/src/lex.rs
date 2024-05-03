@@ -9,7 +9,7 @@ use crate::token::{
 };
 
 // REGEX
-use crate::token::{IDENTIFIERS, INTEGER_LITERAL};
+use crate::token::{CHAR_LITERAL, IDENTIFIERS, INTEGER_LITERAL};
 
 pub fn get_lexemes(source_file: &str) -> Vec<String> {
     let mut lexemes: Vec<String> = Vec::new();
@@ -88,6 +88,23 @@ pub fn get_lexemes(source_file: &str) -> Vec<String> {
 
                 lexemes.push(buffer.clone());
                 buffer.clear();
+            } else if ch == '\'' {
+                //Sjekker om tegnet er en apostrof
+                buffer.push(ch);
+                index += 1;
+                if chars[index] != '\'' {
+                    //Sjekker om det er hva som helst etter apostrofen, tar kun 1 tegn.
+                    buffer.push(chars[index]);
+                    index += 1;
+                    if chars[index] == '\'' {
+                        //Ser etter neste apostrof
+                        buffer.push(chars[index]);
+                        index += 1;
+                    }
+                }
+
+                lexemes.push(buffer.clone());
+                buffer.clear();
             } else {
                 index += 1;
             }
@@ -102,6 +119,7 @@ pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
 
     let integer_literal_regex = &INTEGER_LITERAL;
     let identifiers_regex = &IDENTIFIERS;
+    let char_regex = &CHAR_LITERAL;
 
     for lexeme in lexemes {
         if integer_literal_regex.is_match(&lexeme) {
@@ -122,6 +140,11 @@ pub fn tokenize_lexemes(lexemes: Vec<String>) -> Vec<Token> {
                     token_type: TokenType::Identifier,
                 });
             }
+        } else if char_regex.is_match(&lexeme) {
+            tokens.push(Token {
+                value: Some(lexeme.to_string()),
+                token_type: TokenType::Char,
+            });
         } else if PUNCTUATOR_MAP.contains_key(lexeme.as_str()) {
             if let Some(token_type) = PUNCTUATOR_MAP.get(lexeme.as_str()) {
                 tokens.push(Token {

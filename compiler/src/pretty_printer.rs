@@ -63,6 +63,7 @@ impl fmt::Display for TokenType {
             TokenType::StaticKeyword => write!(f, "static"),
             TokenType::VoidKeyword => write!(f, "void"),
             TokenType::Error => write!(f, "error"),
+            TokenType::Char => write!(f, "char"),
         }
     }
 }
@@ -81,6 +82,9 @@ impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Statement::Return(expr_node) => write!(f, "return {};", expr_node),
+            Statement::Assignment(data_type, name, assign, expr_node) => {
+                write!(f, "{:?} {:?} {:?} {:?}", data_type, name, assign, expr_node)
+            }
         }
     }
 }
