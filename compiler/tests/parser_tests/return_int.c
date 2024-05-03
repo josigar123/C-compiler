@@ -1,7 +1,5 @@
 
 int main()
 {
-    int a = 3;
-    char b = 1;
-    return 2 != 1;
+    return 2 != 1 + 1 + 2 - 3 || 1 == 3 < 3 > 5 <= 9 >= 10 / 3 * 3;
 }
