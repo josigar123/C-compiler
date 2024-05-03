@@ -9,25 +9,6 @@ mod token;
 
 // Bug på generering av flere statements i gen når jeg prøver flere returns i flere funksjoner
 fn main() {
-    //let mut test_tokens: Vec<token::Token> = vec![];
-
-    //test_tokens = test_lexer("tests/lexer_tests/new_token_test.c");
-    //print_tokens(test_tokens);
-    /*
-    let return_int = "tests/parser_tests/return_int.c";
-    let _output_assembly_path = "bin/out.s";
-
-    let mut _lexemes: Vec<String> = vec![];
-    let mut _tokens: Vec<token::Token> = vec![];
-
-    _lexemes = lex::get_lexemes(return_int);
-    _tokens = lex::tokenize_lexemes(_lexemes);
-
-    let mut parser = parser::Parser::new(_tokens);
-
-    let program_node = parser.parse_program().expect("Failed to parse program");
-    println!("{}", program_node);
-    */
     compile();
 }
 
@@ -50,9 +31,8 @@ pub fn print_tokens(tokens: Vec<token::Token>) {
 
 pub fn compile() {
     // Lexing
-    //let return_int = "tests/parser_tests/return_int.c";
+    let return_int = "tests/parser_tests/return_int.c";
     let output_assembly_path = "bin/out.s";
-    let return_int = "/Users/joseph/Documents/GitHub/C-compiler/test.c";
     let mut _lexemes: Vec<String> = vec![];
     let mut _tokens: Vec<token::Token> = vec![];
 
@@ -68,7 +48,6 @@ pub fn compile() {
     // Generating
     let generator = gen::Generator::new(program_node);
 
-    println!("Walking tree");
     let asm = generator.walk_da_tree();
     println!();
 
