@@ -15,6 +15,7 @@ pub struct ExprNode {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Return(ExprNode),
+    Assignment(TokenType, TokenType, TokenType, Option<Box<ExprNode>>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -320,11 +321,95 @@ impl Parser {
         })
     }
 
-    fn parse_statement(&mut self) -> Option<StatementNode> {
-        if self.token_index > self.token_stream.len() {
+    // ####### VICTOR SPLICE START
+    fn parse_assignment(&mut self) -> Option<StatementNode> {
+        let keyword_type = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::IntKeyword => {
+                current_token.clone()
+            }
+            current_token if current_token.token_type == TokenType::CharKeyword => {
+                current_token.clone()
+            }
+            _ => return None,
+        };
+        self.consume();
+
+        let identifier_name = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::Identifier => {
+                current_token.clone()
+            }
+            _ => return None,
+        };
+        self.consume();
+
+        let operator = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::Assign => current_token.clone(),
+            _ => return None,
+        };
+        self.consume();
+
+        let assign_value = match self.peek(0).expect("Token is None") {
+            current_token if current_token.token_type == TokenType::IntLit => {
+                self.parse_expression()
+            }
+            current_token if current_token.token_type == TokenType::Char => self.parse_expression(),
+            _ => return None,
+        };
+        self.consume();
+
+        Some(StatementNode {
+            statement: Statement::Assignment(
+                keyword_type.token_type,
+                identifier_name.token_type,
+                operator.token_type,
+                assign_value.map(Box::new),
+            ),
+        })
+    }
+
+    fn parse_character(&mut self) -> Option<ExprNode> {
+        if let Err(error) = self.expect(TokenType::Char) {
+            println!("Error: {}", error);
             return None;
         }
 
+        let char_value = match self.peek(0) {
+            Some(current_token) if current_token.token_type == TokenType::Char => {
+                current_token.clone()
+            }
+            _ => {
+                println!("Error: Expected a character token.");
+                return None;
+            }
+        };
+
+        let parsed_char = match &char_value.value {
+            Some(value) if value.len() == 3 && value.starts_with('\'') && value.ends_with('\'') => {
+                value.chars().nth(1) // Henter ut tegnet mellom apostrofene
+            }
+            _ => {
+                println!("Error: Invalid character literal format.");
+                return None;
+            }
+        };
+
+        let parsed_char = match parsed_char {
+            Some(c) => c,
+            None => {
+                println!("Error: No character found in token.");
+                return None;
+            }
+        };
+
+        self.consume();
+
+        // Gjør om char til ascii før den sendes til kode-generering, lar oss bruke Number som vanlig. Men ikke alltid ønskelig?
+        Some(ExprNode {
+            expr: Expr::Number(parsed_char as i32),
+        })
+    }
+
+    fn parse_return(&mut self) -> Option<StatementNode> {
         // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {
             println!("Error {}", error);
@@ -355,6 +440,57 @@ impl Parser {
         })
     }
 
+    fn parse_statement(&mut self) -> Option<StatementNode> {
+        if self.token_index > self.token_stream.len() {
+            return None;
+        }
+
+        let current_token = self.peek(0).expect("Token is None");
+        match current_token.token_type {
+            TokenType::IntKeyword => self.parse_assignment(),
+            TokenType::CharKeyword => self.parse_assignment(),
+            TokenType::ReturnKeyword => self.parse_return(),
+            _ => None,
+        }
+    }
+    // ####### VICTOR SPLICE END
+
+    /*
+        fn parse_statement(&mut self) -> Option<StatementNode> {
+            if self.token_index > self.token_stream.len() {
+                return None;
+            }
+
+            // Forventer return da dette er eneste expression
+            if let Err(error) = self.expect(TokenType::ReturnKeyword) {
+                println!("Error {}", error);
+                return None;
+            }
+
+            // Move into expression
+            self.consume();
+            let expression;
+            if let Some(statement_expression) = self.parse_expression() {
+                expression = statement_expression;
+            } else {
+                println!("Error: Failed to parse expression");
+                return None;
+            }
+
+            // Neste token er forventet å være semikolon
+            if let Err(error) = self.expect(TokenType::Semi) {
+                println!("Error {}", error);
+                return None;
+            }
+
+            // Spiser semikolon
+            self.consume();
+
+            Some(StatementNode {
+                statement: Statement::Return(expression),
+            })
+        }
+    */
     fn parse_function(&mut self) -> Option<FunctionNode> {
         if self.token_index >= self.token_stream.len() {
             return None;

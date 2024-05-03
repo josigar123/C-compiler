@@ -8,6 +8,7 @@ pub enum TokenType {
     // Literals
     StringLit,
     IntLit,
+    Char,
     // Identifier
     Identifier,
     // Special Characters
@@ -75,6 +76,7 @@ pub struct Token {
 lazy_static! {
     pub static ref INTEGER_LITERAL: Regex = Regex::new(r"^(0|[1-9]\d*)$").unwrap();
     pub static ref IDENTIFIERS: Regex = Regex::new(r#"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#).unwrap();
+    pub static ref CHAR_LITERAL: Regex = Regex::new(r"'[^']'").unwrap();
 }
 
 // MAPS
