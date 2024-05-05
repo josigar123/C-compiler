@@ -351,7 +351,7 @@ impl Parser {
             current_token if current_token.token_type == TokenType::IntLit => {
                 self.parse_expression()
             }
-            current_token if current_token.token_type == TokenType::Char => self.parse_expression(),
+            current_token if current_token.token_type == TokenType::Char => self.parse_character(),
             _ => return None,
         };
         self.consume();
