@@ -5,6 +5,7 @@ pub enum Expr {
     Number(i32),
     UnaryOp(TokenType, Option<Box<ExprNode>>),
     BinaryOp(TokenType, Box<ExprNode>, Box<ExprNode>),
+    Identfier(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -14,8 +15,9 @@ pub struct ExprNode {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
-    Return(ExprNode),
-    Assignment(TokenType, TokenType, TokenType, Option<Box<ExprNode>>),
+    Return(ExprNode),                                                   // return 2;
+    Assignment(TokenType, TokenType, TokenType, Option<Box<ExprNode>>), // int a = 2;
+    Declare(TokenType, TokenType),                                      // int a;
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -50,7 +52,7 @@ impl Parser {
         }
     }
 
-    // Function to increase readability
+    // Function to increase readability, and maintain contract
     fn parse_expression(&mut self) -> Option<ExprNode> {
         self.parse_or()
     }

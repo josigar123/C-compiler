@@ -5,6 +5,7 @@ mod lex;
 mod parse_util;
 mod parser;
 mod pretty_printer;
+mod symbol_table;
 mod token;
 
 fn main() {
