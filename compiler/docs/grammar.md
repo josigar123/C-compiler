@@ -8,6 +8,8 @@
 *For simplicity, when referencing expressions in e.g. the statement grammar
 it will only be referred to as '&lt;expr&gt;'*
 
+**&lt;decl-assign_expr&gt; ::= Ident Assign &lt;decl-assign_expr&gt;**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;or-expr&gt;**  
 **&lt;or-expr&gt; ::= &lt;and-expr&gt; { || &lt;and-expr&gt; }**  
 **&lt;and-expr&gt; ::= &lt;eq-expr&gt; { && &lt;eq-expr&gt; }**  
 **&lt;eq-expr&gt; ::= &lt;rel-expr&gt; { != or == &lt;rel-expr&gt; }**  
@@ -17,20 +19,27 @@ it will only be referred to as '&lt;expr&gt;'*
 **&lt;term-expr&gt; ::= &lt;factor-expr&gt; { != or == &lt;factor-expr&gt; }**  
 **&lt;factor&gt; ::= "(" &lt;or-exp&gt; ")"**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;int&gt;**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;unary-expr&gt; &lt;factor&gt;**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;unary-expr&gt; &lt;factor&gt;**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Ident**  
 
 ## Statement Grammar
 
-**&lt;return&gt; ::= "return" &lt;expr&gt; Semi**  
-**&lt;declaration&gt; ::= Type Ident [ Assign &lt;expr&gt; ] Semi**  
+**&lt;stmnt&gt; ::= "return" &lt;expr&gt ";"  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Type Ident [ AssignOp &lt;expr&gt; ] ";"**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;decl-assign_expr&gt; ";"**  
 
 ## AST Nodes
 
-### Expressions
+***NOT UPDATED***  
 
-**exp = BinOp(operator, exp, ext)**  
+*Can think of each sub-section representing an enum and its variants where the contents reference the cfg above*  
+
+### Expressions
+  
+**exp = BinOp(operator, exp, exp)**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| UnOp(op, exp)**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Int**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Identifier**  
 
 ### Statements
 
