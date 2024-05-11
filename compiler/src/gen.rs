@@ -274,6 +274,7 @@ impl ExprNode {
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
+            _ => format!("Not yet implemented!"),
         }
     }
 }

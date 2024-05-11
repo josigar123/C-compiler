@@ -6,6 +6,7 @@ pub enum Expr {
     UnaryOp(TokenType, Option<Box<ExprNode>>),
     BinaryOp(TokenType, Box<ExprNode>, Box<ExprNode>),
     Identfier(String),
+    Assignment(TokenType, TokenType, TokenType, Option<Box<ExprNode>>), // Assignment is just an expression
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -55,6 +56,50 @@ impl Parser {
     // Function to increase readability, and maintain contract
     fn parse_expression(&mut self) -> Option<ExprNode> {
         self.parse_or()
+    }
+
+    fn parse_assignment_expr(&mut self) -> Option<ExprNode> {
+        let current_token = self
+            .token_stream
+            .get(self.token_index)
+            .expect("Token is None")
+            .token_type
+            .clone();
+
+        match current_token {
+            TokenType::IntKeyword => {
+                self.consume(); // int
+                let identifier = self
+                    .token_stream
+                    .get(self.token_index)
+                    .expect("Token is none")
+                    .token_type
+                    .clone();
+                self.consume(); // id
+
+                let assign = self
+                    .token_stream
+                    .get(self.token_index)
+                    .expect("Token is none")
+                    .token_type
+                    .clone();
+                self.consume(); // =
+                let expression = self.parse_expression();
+
+                Some(ExprNode {
+                    expr: Expr::Assignment(
+                        current_token.clone(),
+                        identifier.clone(),
+                        assign,
+                        expression.map(Box::new),
+                    ),
+                })
+            }
+            _ => {
+                let expression = self.parse_expression();
+                expression
+            }
+        }
     }
 
     fn parse_or(&mut self) -> Option<ExprNode> {

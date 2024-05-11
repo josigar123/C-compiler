@@ -1,6 +1,6 @@
 
 int main()
 {
-    int b = 2;
-    return (2 > 3) + 4 * 9;
+    int b = 3;
+    return 1 < 2 || 3 && 1;
 }
