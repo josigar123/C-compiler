@@ -8,7 +8,7 @@
 *For simplicity, when referencing expressions in e.g. the statement grammar
 it will only be referred to as '&lt;expr&gt;'*
 
-**&lt;decl-assign_expr&gt; ::= Ident Assign &lt;decl-assign_expr&gt;**
+**&lt;decl-assign_expr&gt; ::= Ident Assign &lt;decl-assign_expr&gt;**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;or-expr&gt;**  
 **&lt;or-expr&gt; ::= &lt;and-expr&gt; { || &lt;and-expr&gt; }**  
 **&lt;and-expr&gt; ::= &lt;eq-expr&gt; { && &lt;eq-expr&gt; }**  
@@ -24,28 +24,25 @@ it will only be referred to as '&lt;expr&gt;'*
 
 ## Statement Grammar
 
-**&lt;stmnt&gt; ::= "return" &lt;expr&gt ";"  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Type Ident [ AssignOp &lt;expr&gt; ] ";"**  
+**&lt;stmnt&gt; ::= "return" &lt;expr&gt; ";"  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Type Ident [ "=" &lt;expr&gt; ] ";"**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;decl-assign_expr&gt; ";"**  
 
 ## AST Nodes
-
-***NOT UPDATED***  
 
 *Can think of each sub-section representing an enum and its variants where the contents reference the cfg above*  
 
 ### Expressions
   
-**exp = BinOp(operator, exp, exp)**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| UnOp(op, exp)**  
+**expr = BinOp(op, expr, expr)**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| UnOp(op, expr)**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Int**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Identifier**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Ident**  
 
 ### Statements
 
-**stmnt = Return(exp)**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Assign(Type, Ident, Assign, exp)**  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Decalre(Type, Ident)**  
+**stmnt = Return(expr)**  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| Assign(Type, Ident, Assign, expr)**  
 
 ### Functions
 
