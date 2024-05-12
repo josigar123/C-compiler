@@ -5,18 +5,17 @@
 
 ## Expression Grammar
 
-*For simplicity, when referencing expressions in e.g. the statement grammar
-it will only be referred to as '&lt;expr&gt;'*
+***Listed in order of operations, such that, "=" has the lowest precedence and "(" ")" has the highest***
 
-**&lt;decl-assign-expr&gt; ::= Ident Assign &lt;decl-assign_expr&gt;**  
+**&lt;decl-assign-expr&gt; ::= Ident "=" &lt;decl-assign_expr&gt;**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;or-expr&gt;**  
-**&lt;or-expr&gt; ::= &lt;and-expr&gt; { || &lt;and-expr&gt; }**  
-**&lt;and-expr&gt; ::= &lt;eq-expr&gt; { && &lt;eq-expr&gt; }**  
-**&lt;eq-expr&gt; ::= &lt;rel-expr&gt; { != or == &lt;rel-expr&gt; }**  
-**&lt;eq-expr&gt; ::= &lt;rel-expr&gt; { ( != or == ) &lt;rel-expr&gt; }**  
-**&lt;rel-expr&gt; ::= &lt;add-expr&gt; { ( < or > or <= or >= ) &lt;add-expr&gt; }**  
-**&lt;add-expr&gt; ::= &lt;term-expr&gt; { ( + or - ) &lt;term-expr&gt; }**  
-**&lt;term-expr&gt; ::= &lt;factor-expr&gt; { != or == &lt;factor-expr&gt; }**  
+**&lt;or-expr&gt; ::= &lt;and-expr&gt; { "||" &lt;and-expr&gt; }**  
+**&lt;and-expr&gt; ::= &lt;eq-expr&gt; { "&&" &lt;eq-expr&gt; }**  
+**&lt;eq-expr&gt; ::= &lt;rel-expr&gt; { "!=" or "==" &lt;rel-expr&gt; }**  
+**&lt;eq-expr&gt; ::= &lt;rel-expr&gt; { ( "!=" or "==" ) &lt;rel-expr&gt; }**  
+**&lt;rel-expr&gt; ::= &lt;add-expr&gt; { ( "<" or ">" or "<=" or ">=" ) &lt;add-expr&gt; }**  
+**&lt;add-expr&gt; ::= &lt;term-expr&gt; { ( "+" or "-" ) &lt;term-expr&gt; }**  
+**&lt;term-expr&gt; ::= &lt;factor-expr&gt; { "*" or "/" &lt;factor-expr&gt; }**  
 **&lt;factor&gt; ::= "(" &lt;decl-assign-expr&gt; ")"**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;int&gt;**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;unary-expr&gt; &lt;factor&gt;**  
@@ -24,8 +23,8 @@ it will only be referred to as '&lt;expr&gt;'*
 
 ## Statement Grammar
 
-**&lt;stmnt&gt; ::= "return" &lt;expr&gt; ";"  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Type Ident [ "=" &lt;expr&gt; ] ";"**  
+**&lt;stmnt&gt; ::= "return" &lt;decl-assign-expr&gt; ";"  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Type Ident [ "=" &lt;decl-assign-expr&gt; ] ";"**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**| &lt;decl-assign_expr&gt; ";"**  
 
 ## AST Nodes

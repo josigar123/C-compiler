@@ -274,7 +274,6 @@ impl ExprNode {
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
-            _ => format!("Not yet implemented!"),
         }
     }
 }
@@ -319,7 +318,7 @@ impl StatementNode {
             Statement::Assignment(
                 TokenType::IntKeyword,
                 TokenType::Identifier,
-                TokenType::Assign,
+                Some(TokenType::Assign),
                 expr_node,
             ) => {
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
@@ -336,7 +335,7 @@ impl StatementNode {
             Statement::Assignment(
                 TokenType::CharKeyword,
                 TokenType::Identifier,
-                TokenType::Assign,
+                Some(TokenType::Assign),
                 expr_node,
             ) => {
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();

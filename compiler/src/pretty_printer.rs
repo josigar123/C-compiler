@@ -85,7 +85,6 @@ impl fmt::Display for Statement {
             Statement::Assignment(data_type, name, assign, expr_node) => {
                 write!(f, "{:?} {:?} {:?} {:?}", data_type, name, assign, expr_node)
             }
-            _ => unimplemented!("Unimplemented"),
         }
     }
 }
@@ -116,7 +115,6 @@ impl fmt::Display for Expr {
             Expr::BinaryOp(operator, left, right) => {
                 write!(f, "({} {:?} {})", left, operator, right)
             }
-            _ => unimplemented!("Unimplemented"),
         }
     }
 }
