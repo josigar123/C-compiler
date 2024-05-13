@@ -331,7 +331,11 @@ impl Parser {
             current_token if current_token.token_type == TokenType::CharKeyword => {
                 current_token.clone()
             }
-            _ => return None,
+            _ => {
+                let keyword_type = self.peek(0).expect("Token is None");
+                println!("Illegal type, type {:?} not supported", keyword_type);
+                return None;
+            }
         };
         self.consume();
 
@@ -339,13 +343,21 @@ impl Parser {
             current_token if current_token.token_type == TokenType::Identifier => {
                 current_token.clone()
             }
-            _ => return None,
+            _ => {
+                let identifier_name = self.peek(0).expect("Token is None");
+                println!("Expected identifier, found {:?}", identifier_name);
+                return None;
+            }
         };
         self.consume();
 
         let operator = match self.peek(0).expect("Token is None") {
             current_token if current_token.token_type == TokenType::Assign => current_token.clone(),
-            _ => return None,
+            _ => {
+                let operator = self.peek(0).expect("Token is None");
+                println!("Expected '=', found: {:?}", operator);
+                return None;
+            }
         };
         self.consume();
 
@@ -354,7 +366,11 @@ impl Parser {
                 self.parse_expression()
             }
             current_token if current_token.token_type == TokenType::Char => self.parse_character(),
-            _ => return None,
+            _ => {
+                println!("Illegal assignable value");
+                self.consume();
+                None
+            }
         };
         self.consume();
 
@@ -371,6 +387,7 @@ impl Parser {
     fn parse_character(&mut self) -> Option<ExprNode> {
         if let Err(error) = self.expect(TokenType::Char) {
             println!("Error: {}", error);
+            self.consume();
             return None;
         }
 
@@ -380,6 +397,7 @@ impl Parser {
             }
             _ => {
                 println!("Error: Expected a character token.");
+                self.consume();
                 return None;
             }
         };
@@ -390,6 +408,7 @@ impl Parser {
             }
             _ => {
                 println!("Error: Invalid character literal format.");
+                self.consume();
                 return None;
             }
         };
@@ -398,6 +417,7 @@ impl Parser {
             Some(c) => c,
             None => {
                 println!("Error: No character found in token.");
+                self.consume();
                 return None;
             }
         };
@@ -413,7 +433,9 @@ impl Parser {
     fn parse_return(&mut self) -> Option<StatementNode> {
         // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {
+            self.error_messages.push(format!("Error {}", error));
             println!("Error {}", error);
+            self.consume();
             return None;
         }
 
@@ -424,12 +446,16 @@ impl Parser {
             expression = statement_expression;
         } else {
             println!("Error: Failed to parse expression");
+            self.error_messages
+                .push("Error: Failed to parse expression".to_string());
+            self.consume(); // Consumes non-existent expression
             return None;
         }
 
         // Neste token er forventet å være semikolon
         if let Err(error) = self.expect(TokenType::Semi) {
             println!("Error {}", error);
+            self.consume();
             return None;
         }
 
@@ -451,7 +477,10 @@ impl Parser {
             TokenType::IntKeyword => self.parse_assignment(),
             TokenType::CharKeyword => self.parse_assignment(),
             TokenType::ReturnKeyword => self.parse_return(),
-            _ => None,
+            _ => {
+                println!("Illegal statement");
+                None
+            }
         }
     }
 
@@ -466,6 +495,8 @@ impl Parser {
         // Expect IntKeyword
         if let Err(error) = self.expect(TokenType::IntKeyword) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // int
 
@@ -476,6 +507,8 @@ impl Parser {
 
         if let Err(error) = self.expect(TokenType::Identifier) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // main or other function ident
 
@@ -484,6 +517,9 @@ impl Parser {
                 Some(value) => value.clone(),
                 None => {
                     println!("Error: Missing function name");
+                    self.error_messages
+                        .push("Error: Missing function name".to_string());
+                    self.consume();
                     return None;
                 }
             },
@@ -497,18 +533,24 @@ impl Parser {
         self.consume();
         if let Err(error) = self.expect(TokenType::LParen) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // (
           // Consume LParen
         self.consume();
         if let Err(error) = self.expect(TokenType::RParen) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // )
           // Consume RParen
         self.consume();
         if let Err(error) = self.expect(TokenType::LBrace) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // {
 
@@ -531,6 +573,8 @@ impl Parser {
 
         if let Err(error) = self.expect(TokenType::RBrace) {
             println!("Error {}", error);
+            self.error_messages.push(format!("Error {}", error));
+            self.consume();
             return None;
         } // }
 
