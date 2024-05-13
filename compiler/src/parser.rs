@@ -39,6 +39,7 @@ pub struct ProgramNode {
 pub struct Parser {
     pub token_index: usize,
     pub token_stream: Vec<Token>,
+    pub error_messages: Vec<String>,
 }
 
 impl Parser {
@@ -47,6 +48,7 @@ impl Parser {
         Parser {
             token_index: 0,
             token_stream: tokens,
+            error_messages: Vec::new(),
         }
     }
 
