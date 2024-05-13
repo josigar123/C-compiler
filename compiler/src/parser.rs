@@ -10,9 +10,11 @@ use crate::token::{Token, TokenType};
     a + b; Pointlett but legal
     a = b + c; Assignment
 
+    WRITTEN IN Expr ENUM AS VARIANT
     New expressions node:
-    <decl-assign-expr> ::= Id = <decl-assign-expr> | <or-expr>, allows a = 5 + 2 or only 5 + 2, etc
+    <decl-assign-expr> ::= Id "=" <decl-assign-expr> | <or-expr>, allows a = 5 + 2 or only 5 + 2, etc
 
+    WRITE THIS IN Statement ENUM AS VARIANT
     New statement nodes:
     <statement> ::= return ...
                 | Type Ident [ "=" <decl-assign-expr> ] ";", allows int a; and int i = 1; etc
@@ -24,6 +26,7 @@ pub enum Expr {
     Number(i32),
     UnaryOp(TokenType, Option<Box<ExprNode>>),
     BinaryOp(TokenType, Box<ExprNode>, Box<ExprNode>),
+    DeclAssignExpr(Option<TokenType>, Option<TokenType>, Option<Box<ExprNode>>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -79,51 +82,6 @@ impl Parser {
         self.parse_or()
     }
 
-    /*
-        fn parse_assignment_expr(&mut self) -> Option<ExprNode> {
-            let current_token = self
-                .token_stream
-                .get(self.token_index)
-                .expect("Token is None")
-                .token_type
-                .clone();
-
-            match current_token {
-                TokenType::IntKeyword => {
-                    self.consume(); // int
-                    let identifier = self
-                        .token_stream
-                        .get(self.token_index)
-                        .expect("Token is none")
-                        .token_type
-                        .clone();
-                    self.consume(); // id
-
-                    let assign = self
-                        .token_stream
-                        .get(self.token_index)
-                        .expect("Token is none")
-                        .token_type
-                        .clone();
-                    self.consume(); // =
-                    let expression = self.parse_expression();
-
-                    Some(ExprNode {
-                        expr: Expr::Assignment(
-                            current_token.clone(),
-                            identifier.clone(),
-                            assign,
-                            expression.map(Box::new),
-                        ),
-                    })
-                }
-                _ => {
-                    let expression = self.parse_expression();
-                    expression
-                }
-            }
-        }
-    */
     fn parse_or(&mut self) -> Option<ExprNode> {
         let and = self.parse_and();
 
