@@ -467,17 +467,26 @@ impl Parser {
             self.token_index
         );
         self.consume(); // Consumes identifier
+        println!("Identifier consumes, current token: {:?}", self.peek(0));
 
-        let operator = match self.peek(0).expect("Token is None") {
-            current_token if current_token.token_type == TokenType::Assign => current_token.clone(),
-            _ => return None,
-        };
-        println!(
-            "parse_assignment Advancing stream, index: {}",
-            self.token_index
-        );
-        self.consume(); // Consumes '='
-
+        // False if statement is only a declaration
+        let operator: Option<Token>;
+        if self.peek(0).unwrap().token_type == TokenType::Assign {
+            operator = match self.peek(0).expect("Token is None") {
+                current_token if current_token.token_type == TokenType::Assign => {
+                    Some(current_token.clone())
+                }
+                _ => return None,
+            };
+            println!(
+                "parse_assignment Advancing stream, index: {}",
+                self.token_index
+            );
+            self.consume(); // Consumes '='
+            println!("Consumes '=', current token: {:?}", self.peek(0));
+        } else {
+            operator = None;
+        }
         // TODO: self.parse_assign_decl_expr()
         // ################# NEW FUNCTION ###################
         let assigned_expression = self.parse_decl_assign();
@@ -513,7 +522,7 @@ impl Parser {
                 // ################# NEW FUNCTION ###################
                 identifier_name,
                 // ################# NEW FUNCTION ###################
-                Some(operator.token_type),
+                operator.map(|op| op.token_type),
                 assigned_expression.map(Box::new),
             ),
         })
