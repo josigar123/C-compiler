@@ -274,7 +274,19 @@ impl ExprNode {
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
-            _ => unimplemented!("Not yet implemented"), // TODO: Remove later
+            // Identifier is an enum varian, token_assing = '=' and expr is an expr
+            /*
+               Need to check for None values to see what needs to be generated.
+               if Identifier = None, then only generate arm64 for the expression
+               else generate variable data, store the evaluated expression on the stack
+               and create an entry in the symbol table either here or in the parser, unsure
+            */
+            Expr::DeclAssign(identifier, token_assign, expr) => {
+                unimplemented!("arm64 for DeclAssign goes here")
+            }
+            Expr::Identifier(ident) => {
+                unimplemented!("arm64 for handling identifiers goes here, stack lookup?")
+            }
         }
     }
 }
@@ -315,10 +327,11 @@ impl StatementNode {
                 let expr_asm = expr_node.generate_assembly();
                 format!("{}\n\tret", expr_asm)
             }
-
+            // TODO: Need to refactor arm64 gen to not pop the values of the stack
+            // Immedialtely after allocating space
             Statement::Assignment(
                 TokenType::IntKeyword,
-                Token,
+                _token,
                 Some(TokenType::Assign),
                 expr_node,
             ) => {
@@ -351,6 +364,9 @@ impl StatementNode {
                 )
             }
             _ => "Unsupported statement".to_string(),
+            Statement::DeclAssignForStmnt(expr) => {
+                unimplemented!("arm64 for 'garbage' expressions goes here")
+            }
         }
     }
 }
