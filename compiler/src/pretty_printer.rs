@@ -1,13 +1,14 @@
 use crate::parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode};
-use crate::token::TokenType;
+use crate::token::{Token, TokenType};
 use std::fmt::{self};
 
-impl fmt::Display for ProgramNode {
+impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for function_node in &self.body {
-            write!(f, "{}", function_node)?;
+        if let Some(value) = &self.value {
+            write!(f, "{}({})", self.token_type, value)
+        } else {
+            write!(f, "{}", self.token_type)
         }
-        Ok(())
     }
 }
 
@@ -68,25 +69,43 @@ impl fmt::Display for TokenType {
     }
 }
 
+impl fmt::Display for ProgramNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "program {{")?;
+        for function_node in &self.body {
+            writeln!(f, "{}", function_node)?;
+        }
+        writeln!(f, "}}")?;
+        Ok(())
+    }
+}
+
 impl fmt::Display for FunctionNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "fn {}() -> {} {{\n", self.name, self.return_value)?;
+        writeln!(f, "  function {}() -> {} {{", self.name, self.return_value)?;
         for statement_node in &self.body {
-            write!(f, "{}", statement_node)?;
+            writeln!(f, "    {}", statement_node)?;
         }
-        write!(f, "}}\n\n")
+        writeln!(f, "  }}")?;
+        Ok(())
     }
 }
 
 impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Statement::Return(expr_node) => write!(f, "return {};", expr_node),
-            Statement::Assignment(data_type, name, assign, expr_node) => {
-                write!(f, "{:?} {:?} {:?} {:?}", data_type, name, assign, expr_node)
+            Statement::Return(expr_node) => writeln!(f, "return {};", expr_node),
+            Statement::Assignment(data_type, name, _, expr_node) => {
+                writeln!(
+                    f,
+                    "{} {} = {};",
+                    data_type,
+                    name,
+                    format_option_expr_node(expr_node)
+                )
             }
             Statement::DeclAssignForStmnt(expression) => {
-                write!(f, "{:?}", expression)
+                writeln!(f, "{};", format_option_expr_node(expression))
             }
         }
     }
@@ -94,7 +113,7 @@ impl fmt::Display for Statement {
 
 impl fmt::Display for StatementNode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "\t{}\n", self.statement)
+        write!(f, "{}", self.statement)
     }
 }
 
@@ -108,22 +127,44 @@ impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Expr::Number(num) => write!(f, "{}", num),
+            Expr::Identifier(ident) => write!(f, "{}", ident),
             Expr::UnaryOp(operator, expr) => {
+                write!(f, "({} ", operator)?;
                 if let Some(expr) = expr {
-                    write!(f, "({:?} {})", operator, expr)
+                    write!(f, "{}", expr)?;
                 } else {
-                    write!(f, "({:?})", operator)
+                    write!(f, "None")?;
                 }
+                write!(f, ")")
             }
             Expr::BinaryOp(operator, left, right) => {
-                write!(f, "({} {:?} {})", left, operator, right)
+                write!(f, "({} {} {})", left, operator, right)
             }
             Expr::DeclAssign(ident, assignment, expr) => {
-                write!(f, "({:?} {:?} {:?})", ident, assignment, expr)
-            }
-            Expr::Identifier(ident) => {
-                write!(f, "({})", ident)
+                write!(
+                    f,
+                    "({} {} {})",
+                    format_option_expr_node(ident),
+                    format_option_token_type(assignment),
+                    format_option_expr_node(expr)
+                )
             }
         }
+    }
+}
+
+// Helper function to format Option<Box<ExprNode>>
+fn format_option_expr_node(opt: &Option<Box<ExprNode>>) -> String {
+    match opt {
+        Some(expr_node) => format!("{}", expr_node),
+        None => "None".to_string(),
+    }
+}
+
+// Helper function to format Option<TokenType>
+fn format_option_token_type(opt: &Option<TokenType>) -> String {
+    match opt {
+        Some(token_type) => format!("{}", token_type),
+        None => "None".to_string(),
     }
 }

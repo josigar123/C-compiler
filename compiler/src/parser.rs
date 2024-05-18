@@ -1,5 +1,7 @@
 use crate::symbol_table::{SymbolTable, TableEntry};
 use crate::token::{Token, TokenType};
+use std::sync::Arc;
+use std::sync::Mutex;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
@@ -47,14 +49,16 @@ pub struct ProgramNode {
 pub struct Parser {
     pub token_index: usize,
     pub token_stream: Vec<Token>,
+    pub symbol_table: Arc<Mutex<SymbolTable>>,
 }
 
 impl Parser {
     // Constructor, implicitly sets index to 0
-    pub fn new(tokens: Vec<Token>) -> Self {
+    pub fn new(tokens: Vec<Token>, symbol_table_thread_safe: Arc<Mutex<SymbolTable>>) -> Self {
         Parser {
             token_index: 0,
             token_stream: tokens,
+            symbol_table: symbol_table_thread_safe,
         }
     }
 
@@ -70,6 +74,9 @@ impl Parser {
             && next_token_in_stream.token_type == TokenType::Assign
         {
             let identifier = self.parse_identifier(); // Function parses ident, consumes into next token
+
+            // Add identifier to symbol table
+
             let next_token = self.peek(0).expect("Token is None").token_type.clone();
             let operator = next_token.clone();
 
@@ -400,16 +407,29 @@ impl Parser {
         // False if statement is only a declaration
         let operator: Option<Token>;
         if self.peek(0).unwrap().token_type == TokenType::Assign {
-            operator = match self.peek(0).expect("Token is None") {
-                current_token if current_token.token_type == TokenType::Assign => {
-                    Some(current_token.clone())
-                }
-                _ => return None,
-            };
+            operator = Some(self.peek(0).unwrap().clone());
 
             self.consume(); // Consumes '='
+
+        // Assignment is declaration only, do not parse for expression
         } else {
             operator = None;
+
+            if let Err(error) = self.expect(TokenType::Semi) {
+                println!("Error {}", error);
+                return None;
+            }
+            // This will consume the ';' before returning keeping the stream correct
+            self.consume();
+            return Some(StatementNode {
+                statement: Statement::Assignment(
+                    keyword_type.token_type,
+                    identifier_name,
+                    operator.map(|op| op.token_type),
+                    // Expression is None
+                    None,
+                ),
+            });
         }
 
         // Parse for the assigned expression

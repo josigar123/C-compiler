@@ -1,4 +1,6 @@
 use std::fs;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::vec;
 mod gen;
 mod lex;
@@ -39,8 +41,10 @@ pub fn compile() {
     _lexemes = lex::get_lexemes(return_int);
     _tokens = lex::tokenize_lexemes(_lexemes);
 
+    let symbol_table_thread_unsdafe = symbol_table::SymbolTable::new();
+    let symbol_table_thread_safe = Arc::new(Mutex::new(symbol_table_thread_unsdafe));
     // Parsing
-    let mut parser = parser::Parser::new(_tokens);
+    let mut parser = parser::Parser::new(_tokens, symbol_table_thread_safe);
 
     let program_node = parser.parse_program().expect("Failed to parse program");
     println!("{}", program_node);
