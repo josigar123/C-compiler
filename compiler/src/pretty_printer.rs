@@ -85,6 +85,9 @@ impl fmt::Display for Statement {
             Statement::Assignment(data_type, name, assign, expr_node) => {
                 write!(f, "{:?} {:?} {:?} {:?}", data_type, name, assign, expr_node)
             }
+            Statement::DeclAssignForStmnt(expression) => {
+                write!(f, "{:?}", expression)
+            }
         }
     }
 }
@@ -114,6 +117,12 @@ impl fmt::Display for Expr {
             }
             Expr::BinaryOp(operator, left, right) => {
                 write!(f, "({} {:?} {})", left, operator, right)
+            }
+            Expr::DeclAssign(ident, assignment, expr) => {
+                write!(f, "({:?} {:?} {:?})", ident, assignment, expr)
+            }
+            Expr::Identifier(ident) => {
+                write!(f, "({})", ident)
             }
         }
     }

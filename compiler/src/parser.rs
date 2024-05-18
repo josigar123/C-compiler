@@ -24,9 +24,18 @@ use crate::token::{Token, TokenType};
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
     Number(i32),
+    // ################# NEW FUNCTION ###################
+    Identifier(String),
+    // ################# NEW FUNCTION ###################
     UnaryOp(TokenType, Option<Box<ExprNode>>),
     BinaryOp(TokenType, Box<ExprNode>, Box<ExprNode>),
-    DeclAssignExpr(Option<TokenType>, Option<TokenType>, Option<Box<ExprNode>>),
+    // ################# NEW FUNCTION ###################
+    DeclAssign(
+        Option<Box<ExprNode>>,
+        Option<TokenType>,
+        Option<Box<ExprNode>>,
+    ), // a = 2 | 5 | a = (b=2) +3
+       // ################# NEW FUNCTION ###################
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -37,12 +46,10 @@ pub struct ExprNode {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Return(ExprNode), // return 2;
-    Assignment(
-        TokenType,
-        TokenType,
-        Option<TokenType>,
-        Option<Box<ExprNode>>,
-    ), // int a = 2;
+    // ################# NEW FUNCTION ###################
+    Assignment(TokenType, Token, Option<TokenType>, Option<Box<ExprNode>>), // int a = 2;
+    DeclAssignForStmnt(Option<Box<ExprNode>>),
+    // ################# NEW FUNCTION ###################
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -79,8 +86,47 @@ impl Parser {
 
     // Function to increase readability, and maintain contract
     fn parse_expression(&mut self) -> Option<ExprNode> {
-        self.parse_or()
+        //self.parse_or()
+        // ################# NEW FUNCTION ###################
+        self.parse_decl_assign()
+        // ################# NEW FUNCTION ###################
     }
+
+    // ################# NEW FUNCTION ###################
+    fn parse_decl_assign(&mut self) -> Option<ExprNode> {
+        let current_token = self.peek(0).expect("Token is None");
+        let next_token_in_stream = self.peek(1).unwrap();
+        if current_token.token_type == TokenType::Identifier
+            && next_token_in_stream.token_type == TokenType::Assign
+        {
+            let identifier = self.parse_identifier(); // Function parses ident, consumes into next token
+            println!("Current ident: {}", identifier.clone().expect("ads"));
+            let next_token = self.peek(0).expect("Token is None").token_type.clone();
+            let operator = next_token.clone();
+            println!("Current operator: {}", operator.clone());
+            println!(
+                "parse_decl_assign Advancing stream, index: {}",
+                self.token_index
+            );
+
+            // FJERN
+
+            self.consume(); // Consume '=' or other operator
+
+            let expression = self.parse_decl_assign();
+
+            Some(ExprNode {
+                expr: Expr::DeclAssign(
+                    identifier.map(Box::new),
+                    Some(operator),
+                    expression.map(Box::new),
+                ),
+            })
+        } else {
+            self.parse_or()
+        }
+    }
+    // ################# NEW FUNCTION ###################
 
     fn parse_or(&mut self) -> Option<ExprNode> {
         let and = self.parse_and();
@@ -90,6 +136,7 @@ impl Parser {
         let mut current_token = self.peek(0).expect("Token is None");
         while current_token.token_type == TokenType::Or {
             let operator = current_token.token_type.clone();
+            println!("parse_or Advancing stream, index: {}", self.token_index);
             self.consume();
             let next_and = self.parse_and();
 
@@ -116,6 +163,7 @@ impl Parser {
         let mut current_token = self.peek(0).expect("Token is None");
         while current_token.token_type == TokenType::And {
             let operator = current_token.token_type.clone();
+            println!("parse_and Advancing stream, index: {}", self.token_index);
             self.consume();
             let next_equality = self.parse_eqality();
 
@@ -144,6 +192,10 @@ impl Parser {
             || current_token.token_type == TokenType::Neq
         {
             let operator = current_token.token_type.clone();
+            println!(
+                "parse_eqality Advancing stream, index: {}",
+                self.token_index
+            );
             self.consume();
             let next_relational = self.parse_relation();
 
@@ -177,6 +229,10 @@ impl Parser {
             || current_token.token_type == TokenType::Ge
         {
             let operator = current_token.token_type.clone();
+            println!(
+                "parse_relation Advancing stream, index: {}",
+                self.token_index
+            );
             self.consume(); // consume operator
 
             let next_additive = self.parse_add();
@@ -209,6 +265,7 @@ impl Parser {
             || current_token.token_type == TokenType::Div
         {
             let operator = current_token.token_type.clone();
+            println!("parse_term Advancing stream, index: {}", self.token_index);
             self.consume(); // Spiser enten * || /
             let next_factor = self.parse_factor();
 
@@ -233,6 +290,7 @@ impl Parser {
         match current_token.token_type {
             // "(" <expr> ")" case
             TokenType::LParen => {
+                println!("parse_factor Advancing stream, index: {}", self.token_index);
                 self.consume(); // Consume '(' token
 
                 let expression = self.parse_expression();
@@ -244,6 +302,7 @@ impl Parser {
                 }
 
                 // Consumer ')'
+                println!("parse_factor Advancing stream, index: {}", self.token_index);
                 self.consume();
                 expression
             }
@@ -253,12 +312,34 @@ impl Parser {
             }
             // IntLit case
             TokenType::IntLit => self.parse_integer(),
+            // ################# NEW FUNCTION ###################
+            TokenType::Identifier => self.parse_identifier(),
+            // ################# NEW FUNCTION ###################
             _ => {
                 println!("Expected factor, found {:?}", current_token.token_type);
                 None
             }
         }
     }
+
+    // ################# NEW FUNCTION ###################
+    fn parse_identifier(&mut self) -> Option<ExprNode> {
+        if let Err(error) = self.expect(TokenType::Identifier) {
+            println!("Error {}", error);
+            return None;
+        }
+
+        let identifier = self.peek(0).expect("Token is None").value.clone();
+        println!(
+            "parse_identifier Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consume identifier
+        Some(ExprNode {
+            expr: Expr::Identifier(identifier.unwrap()),
+        })
+    }
+    // ################# NEW FUNCTION ###################
 
     fn parse_add(&mut self) -> Option<ExprNode> {
         let term = self.parse_term();
@@ -274,6 +355,7 @@ impl Parser {
         {
             let operator = current_token.token_type.clone();
             // Advance stream
+            println!("parse_add Advancing stream, index: {}", self.token_index);
             self.consume();
             let next_term = self.parse_term();
 
@@ -300,6 +382,10 @@ impl Parser {
                 let operator = current_token.clone();
 
                 // Consume operator
+                println!(
+                    "parse_unary_operation Advancing stream, index: {}",
+                    self.token_index
+                );
                 self.consume();
 
                 // Want to parse the expression recursively
@@ -342,6 +428,10 @@ impl Parser {
         };
 
         // spiser expression
+        println!(
+            "parse_integer Advancing stream, index: {}",
+            self.token_index
+        );
         self.consume();
         Some(ExprNode {
             expr: Expr::Number(parsed),
@@ -349,6 +439,7 @@ impl Parser {
     }
 
     fn parse_assignment(&mut self) -> Option<StatementNode> {
+        // Find variable datatype
         let keyword_type = match self.peek(0).expect("Token is None") {
             current_token if current_token.token_type == TokenType::IntKeyword => {
                 current_token.clone()
@@ -358,22 +449,40 @@ impl Parser {
             }
             _ => return None,
         };
-        self.consume();
+        println!(
+            "parse_assignment Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consumes int | char
 
+        // TODO: Kanskje refaktorere for å bruke parse_identifier?
         let identifier_name = match self.peek(0).expect("Token is None") {
             current_token if current_token.token_type == TokenType::Identifier => {
                 current_token.clone()
             }
             _ => return None,
         };
-        self.consume();
+        println!(
+            "parse_assignment Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consumes identifier
 
         let operator = match self.peek(0).expect("Token is None") {
             current_token if current_token.token_type == TokenType::Assign => current_token.clone(),
             _ => return None,
         };
-        self.consume();
+        println!(
+            "parse_assignment Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consumes '='
 
+        // TODO: self.parse_assign_decl_expr()
+        // ################# NEW FUNCTION ###################
+        let assigned_expression = self.parse_decl_assign();
+        // ################# NEW FUNCTION ###################
+        /*
         let assign_value = match self.peek(0).expect("Token is None") {
             current_token if current_token.token_type == TokenType::IntLit => {
                 self.parse_expression()
@@ -382,13 +491,30 @@ impl Parser {
             _ => return None,
         };
         self.consume();
+        */
 
+        // ################# NEW FUNCTION ###################
+        //self.consume(); // Consumes expression, expect semi
+
+        if let Err(error) = self.expect(TokenType::Semi) {
+            println!("Error {}", error);
+            return None;
+        }
+        println!(
+            "parse_assignment Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consumes ';'
+
+        // ################# NEW FUNCTION ###################
         Some(StatementNode {
             statement: Statement::Assignment(
                 keyword_type.token_type,
-                identifier_name.token_type,
+                // ################# NEW FUNCTION ###################
+                identifier_name,
+                // ################# NEW FUNCTION ###################
                 Some(operator.token_type),
-                assign_value.map(Box::new),
+                assigned_expression.map(Box::new),
             ),
         })
     }
@@ -426,7 +552,10 @@ impl Parser {
                 return None;
             }
         };
-
+        println!(
+            "parse_character Advancing stream, index: {}",
+            self.token_index
+        );
         self.consume();
 
         // Gjør om char til ascii før den sendes til kode-generering, lar oss bruke Number som vanlig. Men ikke alltid ønskelig?
@@ -443,6 +572,7 @@ impl Parser {
         }
 
         // Move into expression
+        println!("parse_return Advancing stream, index: {}", self.token_index);
         self.consume();
         let expression;
         if let Some(statement_expression) = self.parse_expression() {
@@ -459,6 +589,7 @@ impl Parser {
         }
 
         // Spiser semikolon
+        println!("parse_return Advancing stream, index: {}", self.token_index);
         self.consume();
 
         Some(StatementNode {
@@ -476,9 +607,35 @@ impl Parser {
             TokenType::IntKeyword => self.parse_assignment(),
             TokenType::CharKeyword => self.parse_assignment(),
             TokenType::ReturnKeyword => self.parse_return(),
+            TokenType::Identifier => self.parse_decl_assign_for_statement(),
+            TokenType::IntLit => self.parse_decl_assign_for_statement(),
             _ => None,
         }
     }
+
+    // ################# NEW FUNCTION ###################
+    fn parse_decl_assign_for_statement(&mut self) -> Option<StatementNode> {
+        println!("Should be here");
+        let expression = self.parse_decl_assign();
+        //self.consume(); // Consume expression
+        println!("Current token: {:?}", self.peek(0).expect("sa").value);
+        if let Err(error) = self.expect(TokenType::Semi) {
+            println!("Error within parse_decl_assign_for_statement");
+            println!("Error {}", error);
+            return None;
+        }
+        println!("Current token: {:?}", self.peek(0).expect("sa").value);
+        println!(
+            "parse_decl_assign_for_statement Advancing stream, index: {}",
+            self.token_index
+        );
+        self.consume(); // Consume ';'
+
+        Some(StatementNode {
+            statement: Statement::DeclAssignForStmnt(expression.map(Box::new)),
+        })
+    }
+    // ################# NEW FUNCTION ###################
 
     fn parse_function(&mut self) -> Option<FunctionNode> {
         if self.token_index >= self.token_stream.len() {
@@ -497,6 +654,7 @@ impl Parser {
         let return_type = self.token_stream[self.token_index].token_type.clone();
 
         // Spiser returtype
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume();
 
         if let Err(error) = self.expect(TokenType::Identifier) {
@@ -519,18 +677,21 @@ impl Parser {
         };
 
         // Consume Identifier
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume();
         if let Err(error) = self.expect(TokenType::LParen) {
             println!("Error {}", error);
             return None;
         } // (
           // Consume LParen
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume();
         if let Err(error) = self.expect(TokenType::RParen) {
             println!("Error {}", error);
             return None;
         } // )
           // Consume RParen
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume();
         if let Err(error) = self.expect(TokenType::LBrace) {
             println!("Error {}", error);
@@ -538,6 +699,7 @@ impl Parser {
         } // {
 
         // Consume LBrace
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume();
 
         while let Some(statement) = self.parse_statement() {
@@ -558,7 +720,7 @@ impl Parser {
             println!("Error {}", error);
             return None;
         } // }
-
+        println!("Advancing stream, index: {}", self.token_index);
         self.consume(); // Consume }
 
         Some(FunctionNode {

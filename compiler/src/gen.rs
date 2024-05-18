@@ -274,6 +274,7 @@ impl ExprNode {
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
+            _ => unimplemented!("Not yet implemented"), // TODO: Remove later
         }
     }
 }
@@ -317,7 +318,7 @@ impl StatementNode {
 
             Statement::Assignment(
                 TokenType::IntKeyword,
-                TokenType::Identifier,
+                Token,
                 Some(TokenType::Assign),
                 expr_node,
             ) => {
@@ -334,7 +335,7 @@ impl StatementNode {
             }
             Statement::Assignment(
                 TokenType::CharKeyword,
-                TokenType::Identifier,
+                Token,
                 Some(TokenType::Assign),
                 expr_node,
             ) => {

@@ -8,7 +8,7 @@ impl Parser {
     }
 
     // Peek en token, returnerer den, advancer ikke token_stream
-    pub fn peek(&mut self, offset: usize) -> Option<&Token> {
+    pub fn peek(&self, offset: usize) -> Option<&Token> {
         if self.token_index + offset >= self.token_stream.len() {
             return None;
         }
