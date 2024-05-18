@@ -9,19 +9,19 @@ use std::collections::HashSet;
 // Represents a single entry
 // Value is optional as this: int a; is legal
 // When checking when is in use, it needs to be Some(t), else fail
-struct TableEntry {
-    identifier: String,
-    value: Option<u32>,
-    stack_offset: u32,
+pub struct TableEntry {
+    pub identifier: String,
+    pub value: Option<u32>, // Needs to be generic <T> when compiler is expanded
+    pub stack_offset: u32,  // Stack offset for current variable
 }
 
 // The actual structure, holds a vector of entries
 // Holds a map of identifiers for checking for existence or duplicate names
 // Take into account the 4 byte boundary ARM64 requires for its stack when storing ints
-struct SymbolTable {
-    entries: Vec<TableEntry>,
-    identifier_check: HashSet<String>,
-    current_stack_offet: u32,
+pub struct SymbolTable {
+    pub entries: Vec<TableEntry>,
+    pub identifier_check: HashSet<String>,
+    pub current_stack_offet: u32, // What to be deallocated at program end
 }
 
 impl SymbolTable {
@@ -38,6 +38,7 @@ impl SymbolTable {
         identifier_name: String,
         identifier_value: Option<u32>,
     ) -> TableEntry {
+        // Assumes only integers, could add param to check type
         self.current_stack_offet += 4;
         let new_entry = TableEntry {
             identifier: identifier_name,
