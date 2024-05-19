@@ -23,20 +23,15 @@ impl ExprNode {
             Expr::UnaryOp(operator, expr) => match operator {
                 TokenType::Minus => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
-                    format!("{}\n\tneg x0, x0", expr_asm)
+                    format!("{}\n\tneg w0, w0", expr_asm)
                 }
                 TokenType::BitComplement => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
-                    format!("{}\n\tmvn x0, x0", expr_asm)
+                    format!("{}\n\tmvn w0, w0", expr_asm)
                 }
                 TokenType::Not => {
                     let expr_asm = expr.as_ref().unwrap().generate_assembly();
-                    format!(
-                        "{}\n\tcmp x0, #0
-                        \n\tmov x0, #0
-                        \n\tcset x0, eq",
-                        expr_asm
-                    )
+                    format!("{}\n\tcmp w0, #0\n\tmov w0, #0\n\tcset w0, eq", expr_asm)
                 }
 
                 _ => "Unsupported operator".to_string(),
@@ -52,7 +47,7 @@ impl ExprNode {
 
                         // Store left_expr_asm on stack, will lie in x0,
                         addition_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]{}\n\tldr x1, [sp, 12]\n\tadd x0, x0, x1\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]{}\n\tldr w1, [sp, 12]\n\tadd w0, w0, w1\n\tadd sp, sp, 16",
                             add_left_expr_asm, add_right_expr_asm
                         );
 
@@ -65,7 +60,7 @@ impl ExprNode {
                         let sub_right_expr_asm = right_expr.generate_assembly();
 
                         subtraction_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n{}\n\tldr x1, [sp, 12]\n\tsub x0, x1, x0\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n{}\n\tldr w1, [sp, 12]\n\tsub w0, w1, w0\n\tadd sp, sp, 16",
                             sub_left_expr_asm, sub_right_expr_asm
                         );
 
@@ -78,7 +73,7 @@ impl ExprNode {
                         let mul_right_expr_asm = right_expr.generate_assembly();
 
                         multiplication_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tmul x0, x1, x0\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tmul w0, w1, w0\n\tadd sp, sp, 16",
                             mul_left_expr_asm, mul_right_expr_asm
                         );
 
@@ -92,7 +87,7 @@ impl ExprNode {
                         let div_right_expr_asm = right_expr.generate_assembly();
 
                         division_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tsdiv x0, x1, x0\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tsdiv w0, w1, w0\n\tadd sp, sp, 16",
                             div_left_expr_asm, div_right_expr_asm
                         );
 
@@ -112,7 +107,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1; // 2 for første label
 
                         or_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x1, 0\n\tbne .L{}\n\tcmp x0, 0\n\tbeq .L{}\n.L{}:\n\tmov x0, 1\n\tb   .L{}\n.L{}:\n\tmov x0, 0\n.L{}:\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w1, 0\n\tbne .L{}\n\tcmp w0, 0\n\tbeq .L{}\n.L{}:\n\tmov w0, 1\n\tb .L{}\n.L{}:\n\tmov w0, 0\n.L{}:\n\tadd sp, sp, 16",
                             or_left_expr_asm,
                             or_right_expr_asm,
                             free_label,
@@ -139,7 +134,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1; // 5 i første omgang, kanskje
 
                         and_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x1, 0\n\tbeq .L{}\n\tcmp x0, 0\n\tbeq .L{}\n\tmov x0, 1\n\tb   .L{}\n.L{}:\n\tmov w0, 0\n.L{}:\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w1, 0\n\tbeq .L{}\n\tcmp w0, 0\n\tbeq .L{}\n\tmov w0, 1\n\tb .L{}\n.L{}:\n\tmov w0, 0\n.L{}:\n\tadd sp, sp, 16",
                             and_left_expr_asm,
                             and_right_expr_asm,
                             free_label,
@@ -159,7 +154,7 @@ impl ExprNode {
                         let equal_right_expr_asm = right_expr.generate_assembly();
 
                         equal_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x1, x0\n\tcset x0, eq\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w1, w0\n\tcset w0, eq\n\tadd sp, sp, 16",
                             equal_left_expr_asm, equal_right_expr_asm
                         );
 
@@ -172,7 +167,7 @@ impl ExprNode {
                         let not_equal_right_expr_asm = right_expr.generate_assembly();
 
                         not_equal_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x0, x1\n\tcset x0, ne\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w0, w1\n\tcset w0, ne\n\tadd sp, sp, 16",
                             not_equal_left_expr_asm, not_equal_right_expr_asm
                         );
 
@@ -190,7 +185,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1;
 
                         less_than_asm += &format!(
-                            "{}\n\tsub sp, sp, 16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x1, x0\n\tblt .L{}\n\tmov w0, 0\n\tb .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16\n\t",
+                            "{}\n\tsub sp, sp, 16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w1, w0\n\tblt .L{}\n\tmov w0, 0\n\tb .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16\n\t",
                             less_than_left_expr_asm,
                             less_than_right_expr_asm,
                             free_label,
@@ -213,7 +208,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1;
 
                         greater_than_asm += &format!(
-                            "{}\n\tsub sp, sp, 16\n\tstr x0, [sp, 12]\n\t{}\n\tldr x1, [sp, 12]\n\tcmp x1, x0\n\tbgt .L{}\n\tmov w0, 0\n\t b .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, 16\n\tstr w0, [sp, 12]\n\t{}\n\tldr w1, [sp, 12]\n\tcmp w1, w0\n\tbgt .L{}\n\tmov w0, 0\n\t b .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16",
                             greater_than_left_expr_asm,
                             greater_than_right_expr_asm,
                             free_label,
@@ -236,7 +231,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1;
 
                         less_eq_than_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 16]\n\t{}\n\tldr x1, [sp, 16]\n\tcmp x1, x0\n\tble .L{}\n\tmov x0, 0\n\tb   .L{}\n.L{}:\n\tmov x0, 1\n.L{}:\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 16]\n\t{}\n\tldr w1, [sp, 16]\n\tcmp w1, w0\n\tble .L{}\n\tmov w0, 0\n\tb .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16",
                             less_eq_than_left_expr_asm,
                             less_eq_than_right_expr_asm,
                             free_label,
@@ -259,7 +254,7 @@ impl ExprNode {
                         let free_label = stack_top.unwrap() + 1;
 
                         greater_eq_than_asm += &format!(
-                            "{}\n\tsub sp, sp, #16\n\tstr x0, [sp, 16]\n\t{}\n\tldr x1, [sp, 16]\n\tcmp x1, x0\n\tbge .L{}\n\tmov x0, 0\n\tb   .L{}\n.L{}:\n\tmov x0, 1\n.L{}:\n\tadd sp, sp, 16",
+                            "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 16]\n\t{}\n\tldr w1, [sp, 16]\n\tcmp w1, w0\n\tbge .L{}\n\tmov w0, 0\n\tb .L{}\n.L{}:\n\tmov w0, 1\n.L{}:\n\tadd sp, sp, 16",
                             greater_eq_than_left_expr_asm,
                             greater_eq_than_right_expr_asm,
                             free_label,
@@ -337,12 +332,7 @@ impl StatementNode {
             ) => {
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
                 format!(
-                    "\n\tsub sp, sp, #16
-                    \n\t{}
-                    \n\t
-                    str x0, [sp,12]
-                    \n\tmov x0, 0
-                    \n\tadd sp, sp, 16\n\t",
+                    "\n\tsub sp, sp, #16\n\t{}\n\tstr w0, [sp,12]\n\tmov w0, 0\n\tadd sp, sp, 16\n\t",
                     expr_asm
                 )
             }
@@ -354,12 +344,7 @@ impl StatementNode {
             ) => {
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
                 format!(
-                    "\n\tsub sp, sp, #16
-                    \n\t{}
-                    \n\t
-                    str x0, [sp,12]
-                    \n\tmov x0, 0
-                    \n\tadd sp, sp, 16\n\t",
+                    "\n\tsub sp, sp, #16\n\t{}\n\tstr w0, [sp,12]\n\tmov w0, 0\n\tadd sp, sp, 16\n\t",
                     expr_asm
                 )
             }
