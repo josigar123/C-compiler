@@ -35,4 +35,14 @@ impl SymbolTable {
 
         entry
     }
+
+    pub fn pretty_print(&self) {
+        println!("Symbol Table:");
+        for (identifier, entry) in &self.entries {
+            println!("Identifier: {}", identifier);
+            println!("Stack Offset: {}", entry.stack_offset);
+            println!("Initialized: {}", entry.is_initialized);
+            println!();
+        }
+    }
 }

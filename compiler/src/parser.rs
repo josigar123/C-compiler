@@ -1,4 +1,4 @@
-use crate::symbol_table::{SymbolTable, TableEntry};
+use crate::symbol_table::SymbolTable;
 use crate::token::{Token, TokenType};
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -329,10 +329,6 @@ impl Parser {
                 let operator = current_token.clone();
 
                 // Consume operator
-                println!(
-                    "parse_unary_operation Advancing stream, index: {}",
-                    self.token_index
-                );
                 self.consume();
 
                 // Want to parse the expression recursively
@@ -345,7 +341,7 @@ impl Parser {
             }
             _ => {
                 println!(
-                    "Error: Expected a unary operator, found {:?}",
+                    "Error: Expected a unary operator, found {}",
                     current_token.token_type
                 );
                 None
@@ -413,19 +409,28 @@ impl Parser {
 
         // Assignment is declaration only, do not parse for expression
         } else {
-            operator = None;
-
             if let Err(error) = self.expect(TokenType::Semi) {
                 println!("Error {}", error);
                 return None;
             }
+
+            // Add uninitialized variable to symbol table
+            let ident_value = identifier_name.value.as_ref().unwrap().clone();
+
+            {
+                // Scope to borrow mutable reference
+                let mut symbol_table = self.symbol_table.lock().unwrap();
+                symbol_table.add_entry(ident_value, false);
+            }
+
             // This will consume the ';' before returning keeping the stream correct
             self.consume();
             return Some(StatementNode {
                 statement: Statement::Assignment(
                     keyword_type.token_type,
                     identifier_name,
-                    operator.map(|op| op.token_type),
+                    // Assign is None
+                    None,
                     // Expression is None
                     None,
                 ),
@@ -438,6 +443,15 @@ impl Parser {
         if let Err(error) = self.expect(TokenType::Semi) {
             println!("Error {}", error);
             return None;
+        }
+
+        // Add initialized variable to symbol table
+        let ident_value = identifier_name.value.as_ref().unwrap().clone();
+
+        {
+            // Scope to borrow mutable reference
+            let mut symbol_table = self.symbol_table.lock().unwrap();
+            symbol_table.add_entry(ident_value, true);
         }
 
         self.consume(); // Consumes ';'
