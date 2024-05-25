@@ -11,6 +11,22 @@ _main:
 	add sp, sp, 16
 	
 	
+	sub sp, sp, #16
+	
+	mov w0, #9
+	str w0, [sp,12]
+	mov w0, 0
+	add sp, sp, 16
+	
+	
+	sub sp, sp, #16
+	
+	mov w0, #8
+	str w0, [sp,12]
+	mov w0, 0
+	add sp, sp, 16
+	
+	
 	mov w0, #1
 	sub sp, sp, #16
 	str w0, [sp, 12]
@@ -127,6 +143,9 @@ _main:
 	str w0, [sp, 12]
 	
 	mov w0, #3
+	cmp w0, #0
+	mov w0, #0
+	cset w0, eq
 	ldr w1, [sp, 12]
 	cmp w1, 0
 	bne .L12

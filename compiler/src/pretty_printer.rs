@@ -51,7 +51,6 @@ impl fmt::Display for TokenType {
             TokenType::ReturnKeyword => write!(f, "return"),
             TokenType::IfKeyword => write!(f, "if"),
             TokenType::ElseKeyword => write!(f, "else"),
-            TokenType::ElseIfKeyword => write!(f, "else if"),
             TokenType::EnumKeyword => write!(f, "enum"),
             TokenType::WhileKeyword => write!(f, "while"),
             TokenType::ForKeyword => write!(f, "for"),

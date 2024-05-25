@@ -49,7 +49,6 @@ pub enum TokenType {
     ReturnKeyword,
     IfKeyword,
     ElseKeyword,
-    ElseIfKeyword,
     EnumKeyword,
     WhileKeyword,
     ForKeyword,
@@ -98,7 +97,6 @@ lazy_static! {
         map.insert("while", TokenType::WhileKeyword);
         map.insert("else", TokenType::ElseKeyword);
         map.insert("for", TokenType::ForKeyword);
-        map.insert("else if", TokenType::ElseIfKeyword);
         map.insert("struct", TokenType::StructKeyword);
         map.insert("enum", TokenType::EnumKeyword);
         map.insert("static", TokenType::StaticKeyword);
