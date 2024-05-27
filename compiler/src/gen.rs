@@ -288,22 +288,23 @@ impl ExprNode {
             Expr::DeclAssign(identifier, _token_assign, expr) => {
                 let mut decl_assign_asm = "".to_string();
 
+                if let Some(expr_node) = expr {
+                    let expr_asm = expr_node.generate_assembly();
+                    decl_assign_asm.push_str(&expr_asm);
+                }
+
                 if let Some(identifier) = identifier {
                     if let Expr::Identifier(ident_str) = &identifier.expr {
                         let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                         match symbol_table.lookup_entry(ident_str) {
                             Some(entry) => {
-                                  decl_assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", entry.stack_offset));
+                                  decl_assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", entry.bytes_allocated - entry.stack_offset));
                             },
                             None => println!("No entry found for '{}'", identifier),
                         }
                     }
                 }
 
-                if let Some(expr_node) = expr {
-                    let expr_asm = expr_node.generate_assembly();
-                    decl_assign_asm.push_str(&expr_asm);
-                }
                 decl_assign_asm
             }
 
@@ -315,7 +316,7 @@ impl ExprNode {
                         // Only return stack offset in preparation for register operations
                         //i.e. stack lookup.
                         if entry.is_initialized {
-                            ident_asm.push_str(&format!("{}", entry.stack_offset));
+                            ident_asm.push_str(&format!("{}", entry.bytes_allocated - entry.stack_offset));
                         }
                     }
                     None => println!("No entry found for '{}'", ident),
@@ -363,12 +364,14 @@ impl StatementNode {
                 let mut return_asm = "".to_string();
                 let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                 let stack_offset = symbol_table.current_stack_offset;
+                let bytes_allocated = symbol_table.current_bytes_allocated;
                 let expr_asm = expr_node.generate_assembly();
 
                 return_asm.push_str(&expr_asm);
 
                 if stack_offset > 0 {
-                       return_asm.push_str(&format!("\n\tadd sp, sp, #{}", stack_offset));
+
+                       return_asm.push_str(&format!("\n\tadd sp, sp, #{}", bytes_allocated));
                 }
 
                 return_asm.push_str("\n\tret");
@@ -384,19 +387,24 @@ impl StatementNode {
                 let mut assign_asm = "".to_string();
                 let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
 
+                let stack_offset = symbol_table.current_stack_offset;
+                if(16 - stack_offset) == 0 || stack_offset == 0 {
+                    assign_asm.push_str(&format!("\n\tsub sp, sp, #16"));
+                    symbol_table.allocate_space();
+                }
+
+                let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
+                assign_asm.push_str(&expr_asm);
+
                 if _token.token_type == TokenType::Identifier {
                     let token_value = _token.value.clone();
                     if let Some(token_value) = token_value {
+
                         symbol_table.add_entry(token_value, true);
-
                         let stack_offset = symbol_table.current_stack_offset;
-                        //Since we are only using int for the time being the max size we want to subtract from the sp is 4 bytes.
-
-                        assign_asm.push_str(&format!("\n\tsub sp, sp, #4\n\tstr w0, [sp, #{}]", stack_offset));
+                        assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", 16 - stack_offset));
                     }
                 }
-                let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
-                assign_asm.push_str(&expr_asm);
 
                 assign_asm
             }

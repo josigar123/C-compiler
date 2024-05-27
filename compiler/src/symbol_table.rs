@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub struct TableEntry {
     pub stack_offset: u32,    // Stack offset for current variable
     pub is_initialized: bool, // Does it hold a value?
+    pub bytes_allocated: u32,
 }
 
 // Holds a map of identifiers for checking for existence or duplicate names
@@ -13,6 +14,7 @@ pub struct TableEntry {
 pub struct SymbolTable {
     pub entries: HashMap<String, TableEntry>,
     pub current_stack_offset: u32, // What to be deallocated at program end
+    pub current_bytes_allocated: u32,
 }
 
 impl SymbolTable {
@@ -20,7 +22,11 @@ impl SymbolTable {
         SymbolTable {
             entries: HashMap::new(),
             current_stack_offset: 0,
+            current_bytes_allocated: 0,
         }
+    }
+    pub fn allocate_space(&mut self) {
+        self.current_bytes_allocated += 16
     }
 
     pub fn add_entry(&mut self, identifier: String, initialized: bool) -> TableEntry {
@@ -30,6 +36,7 @@ impl SymbolTable {
         let entry = TableEntry {
             stack_offset: self.current_stack_offset,
             is_initialized: initialized,
+            bytes_allocated: self.current_bytes_allocated,
         };
         self.entries.insert(identifier, entry.clone());
 
