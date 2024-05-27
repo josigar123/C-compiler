@@ -12,28 +12,31 @@ pub struct TableEntry {
 #[derive(Debug, PartialEq, Clone)]
 pub struct SymbolTable {
     pub entries: HashMap<String, TableEntry>,
-    pub current_stack_offet: u32, // What to be deallocated at program end
+    pub current_stack_offset: u32, // What to be deallocated at program end
 }
 
 impl SymbolTable {
     pub fn new() -> Self {
         SymbolTable {
             entries: HashMap::new(),
-            current_stack_offet: 0,
+            current_stack_offset: 0,
         }
     }
 
     pub fn add_entry(&mut self, identifier: String, initialized: bool) -> TableEntry {
         // Assumes only integers, could add param to check type
-        self.current_stack_offet += 4;
+        self.current_stack_offset += 4;
 
         let entry = TableEntry {
-            stack_offset: self.current_stack_offet,
+            stack_offset: self.current_stack_offset,
             is_initialized: initialized,
         };
         self.entries.insert(identifier, entry.clone());
 
         entry
+    }
+    pub fn lookup_entry(&self, identifier: &str) -> Option<&TableEntry> {
+        self.entries.get(identifier)
     }
 
     pub fn pretty_print(&self) {

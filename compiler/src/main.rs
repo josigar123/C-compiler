@@ -93,7 +93,7 @@ pub fn compile() {
     symbol_table.pretty_print();
 
     // Generating
-    let generator = gen::Generator::new(program_node);
+    let generator = gen::Generator::new(program_node,symbol_table_thread_safe.clone());
 
     let asm = generator.walk_da_tree();
     println!();

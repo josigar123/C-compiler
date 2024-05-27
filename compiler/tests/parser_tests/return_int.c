@@ -1,6 +1,6 @@
 
 int main()
 {
-    int a = 10;
-    return 1 - 2 > 2 < 3 >= 1 <= 4 + 4 / 4 * 1 != 0 == 1 && 2 || 3;
+    int a = 5;
+    return 0;
 }

@@ -89,15 +89,12 @@ pub fn get_lexemes(source_file: &str) -> Vec<String> {
                 lexemes.push(buffer.clone());
                 buffer.clear();
             } else if ch == '\'' {
-                //Sjekker om tegnet er en apostrof
                 buffer.push(ch);
                 index += 1;
                 if chars[index] != '\'' {
-                    //Sjekker om det er hva som helst etter apostrofen, tar kun 1 tegn.
                     buffer.push(chars[index]);
                     index += 1;
                     if chars[index] == '\'' {
-                        //Ser etter neste apostrof
                         buffer.push(chars[index]);
                         index += 1;
                     }

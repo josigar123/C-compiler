@@ -465,47 +465,6 @@ impl Parser {
         })
     }
 
-    fn parse_character(&mut self) -> Option<ExprNode> {
-        if let Err(error) = self.expect(TokenType::Char) {
-            println!("Error: {}", error);
-            return None;
-        }
-
-        let char_value = match self.peek(0) {
-            Some(current_token) if current_token.token_type == TokenType::Char => {
-                current_token.clone()
-            }
-            _ => {
-                println!("Error: Expected a character token.");
-                return None;
-            }
-        };
-
-        let parsed_char = match &char_value.value {
-            Some(value) if value.len() == 3 && value.starts_with('\'') && value.ends_with('\'') => {
-                value.chars().nth(1) // Henter ut tegnet mellom apostrofene
-            }
-            _ => {
-                println!("Error: Invalid character literal format.");
-                return None;
-            }
-        };
-
-        let parsed_char = match parsed_char {
-            Some(c) => c,
-            None => {
-                println!("Error: No character found in token.");
-                return None;
-            }
-        };
-
-        self.consume();
-        // Gjør om char til ascii før den sendes til kode-generering, lar oss bruke Number som vanlig. Men ikke alltid ønskelig?
-        Some(ExprNode {
-            expr: Expr::Number(parsed_char as i32),
-        })
-    }
-
     fn parse_return(&mut self) -> Option<StatementNode> {
         // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {

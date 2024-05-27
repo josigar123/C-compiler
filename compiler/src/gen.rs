@@ -1,9 +1,9 @@
 use crate::{
-    parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode},
-    token::TokenType,
+    parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode}, symbol_table, token::TokenType
 };
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};
+use crate::symbol_table::SymbolTable;
 
 // A list, treated as a stack to keep track of labels where they are needed, will only contain the last used number of the label
 // Assumes scheme .L1, .L2 etc
@@ -14,6 +14,15 @@ lazy_static! {
         Arc::new(stack)
     };
 }
+
+//Shared internal symbol_table reference for generator
+lazy_static! {
+    static ref SYMBOL_TABLE_GENERATOR: Arc<Mutex<SymbolTable>> = {
+        let symbol_table = Mutex::new(SymbolTable::new());
+        Arc::new(symbol_table)
+    };
+}
+
 
 impl ExprNode {
     pub fn generate_assembly(&self) -> String {
@@ -269,19 +278,51 @@ impl ExprNode {
                     _ => format!("Unsupported operator: {}", operator),
                 }
             }
-            // Identifier is an enum varian, token_assing = '=' and expr is an expr
+            // Identifier is an enum variant, token_assign = '=' and expr is an expr
             /*
                Need to check for None values to see what needs to be generated.
                if Identifier = None, then only generate arm64 for the expression
                else generate variable data, store the evaluated expression on the stack
                and create an entry in the symbol table either here or in the parser, unsure
             */
-            Expr::DeclAssign(identifier, token_assign, expr) => {
-                unimplemented!("arm64 for DeclAssign goes here")
+            Expr::DeclAssign(identifier, _token_assign, expr) => {
+                let mut decl_assign_asm = "".to_string();
+
+                if let Some(identifier) = identifier {
+                    if let Expr::Identifier(ident_str) = &identifier.expr {
+                        let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                        match symbol_table.lookup_entry(ident_str) {
+                            Some(entry) => {
+                                  decl_assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", entry.stack_offset));
+                            },
+                            None => println!("No entry found for '{}'", identifier),
+                        }
+                    }
+                }
+
+                if let Some(expr_node) = expr {
+                    let expr_asm = expr_node.generate_assembly();
+                    decl_assign_asm.push_str(&expr_asm);
+                }
+                decl_assign_asm
             }
+
             Expr::Identifier(ident) => {
-                unimplemented!("arm64 for handling identifiers goes here, stack lookup?")
+                let mut ident_asm = "".to_string();
+                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                match symbol_table.lookup_entry(ident) {
+                    Some(entry) => {
+                        // Only return stack offset in preparation for register operations
+                        //i.e. stack lookup.
+                        if entry.is_initialized {
+                            ident_asm.push_str(&format!("{}", entry.stack_offset));
+                        }
+                    }
+                    None => println!("No entry found for '{}'", ident),
+                }
+                ident_asm
             }
+
         }
     }
 }
@@ -319,22 +360,45 @@ impl StatementNode {
     pub fn generate_assembly(&self) -> String {
         match &self.statement {
             Statement::Return(expr_node) => {
+                let mut return_asm = "".to_string();
+                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                let stack_offset = symbol_table.current_stack_offset;
                 let expr_asm = expr_node.generate_assembly();
-                format!("{}\n\tret", expr_asm)
+
+                return_asm.push_str(&expr_asm);
+
+                if stack_offset > 0 {
+                       return_asm.push_str(&format!("\n\tadd sp, sp, #{}", stack_offset));
+                }
+
+                return_asm.push_str("\n\tret");
+
+                return_asm
             }
-            // TODO: Need to refactor arm64 gen to not pop the values of the stack
-            // Immedialtely after allocating space
             Statement::Assignment(
                 TokenType::IntKeyword,
                 _token,
                 Some(TokenType::Assign),
                 expr_node,
             ) => {
+                let mut assign_asm = "".to_string();
+                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+
+                if _token.token_type == TokenType::Identifier {
+                    let token_value = _token.value.clone();
+                    if let Some(token_value) = token_value {
+                        symbol_table.add_entry(token_value, true);
+
+                        let stack_offset = symbol_table.current_stack_offset;
+                        //Since we are only using int for the time being the max size we want to subtract from the sp is 4 bytes.
+
+                        assign_asm.push_str(&format!("\n\tsub sp, sp, #4\n\tstr w0, [sp, #{}]", stack_offset));
+                    }
+                }
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
-                format!(
-                    "\n\tsub sp, sp, #16\n\t{}\n\tstr w0, [sp,12]\n\tmov w0, 0\n\tadd sp, sp, 16\n\t",
-                    expr_asm
-                )
+                assign_asm.push_str(&expr_asm);
+
+                assign_asm
             }
             Statement::Assignment(
                 TokenType::CharKeyword,
@@ -348,21 +412,27 @@ impl StatementNode {
                     expr_asm
                 )
             }
-            _ => "Unsupported statement".to_string(),
             Statement::DeclAssignForStmnt(expr) => {
-                unimplemented!("arm64 for 'garbage' expressions goes here")
+                let expr_asm = expr.as_ref().unwrap().generate_assembly();
+                expr_asm
             }
+            _ => "Unsupported statement".to_string(),
         }
     }
 }
 
+
 pub struct Generator {
-    root: ProgramNode,
+    pub root: ProgramNode,
+    pub symbol_table: Arc<Mutex<SymbolTable>>,
 }
 
 impl Generator {
-    pub fn new(root_node: ProgramNode) -> Self {
-        Generator { root: root_node }
+    pub fn new(root_node: ProgramNode, symbol_table_thread_safe: Arc<Mutex<SymbolTable>>) -> Self {
+        Generator { 
+            root: root_node,
+            symbol_table: symbol_table_thread_safe,
+        }
     }
 
     pub fn walk_da_tree(&self) -> String {
