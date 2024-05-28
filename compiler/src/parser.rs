@@ -388,7 +388,7 @@ impl Parser {
             }
             _ => return None,
         };
-        self.consume(); // Consumes int | char
+        self.consume(); // Consumes int | char
 
         // TODO: Kanskje refaktorere for å bruke parse_identifier?
         let identifier_name = match self.peek(0).expect("Token is None") {
@@ -466,7 +466,6 @@ impl Parser {
     }
 
     fn parse_return(&mut self) -> Option<StatementNode> {
-        // Forventer return da dette er eneste expression
         if let Err(error) = self.expect(TokenType::ReturnKeyword) {
             println!("Error {}", error);
             return None;
@@ -475,6 +474,7 @@ impl Parser {
         // Move into expression
         self.consume();
         let expression;
+
         if let Some(statement_expression) = self.parse_expression() {
             expression = statement_expression;
         } else {

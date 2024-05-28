@@ -310,13 +310,14 @@ impl ExprNode {
 
             Expr::Identifier(ident) => {
                 let mut ident_asm = "".to_string();
+
                 let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                 match symbol_table.lookup_entry(ident) {
                     Some(entry) => {
                         // Only return stack offset in preparation for register operations
                         //i.e. stack lookup.
                         if entry.is_initialized {
-                            ident_asm.push_str(&format!("{}", entry.bytes_allocated - entry.stack_offset));
+                            ident_asm.push_str(&format!("\n\tldr w0, [sp, {}]", entry.bytes_allocated - entry.stack_offset));
                         }
                     }
                     None => println!("No entry found for '{}'", ident),
@@ -362,9 +363,16 @@ impl StatementNode {
         match &self.statement {
             Statement::Return(expr_node) => {
                 let mut return_asm = "".to_string();
-                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
-                let stack_offset = symbol_table.current_stack_offset;
-                let bytes_allocated = symbol_table.current_bytes_allocated;
+                let stack_offset: u32;
+                let bytes_allocated: u32;
+
+                // Scope to force symbol_table out of scope
+                {
+                    let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                    stack_offset = symbol_table.current_stack_offset;
+                    bytes_allocated = symbol_table.current_bytes_allocated;
+                }
+
                 let expr_asm = expr_node.generate_assembly();
 
                 return_asm.push_str(&expr_asm);
