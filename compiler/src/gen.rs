@@ -318,7 +318,8 @@ impl ExprNode {
                 match symbol_table.lookup_entry(ident) {
                     Some(entry) => {
                         if entry.is_initialized {
-                            ident_asm.push_str(&format!("\n\tldr w0, [sp, {}]", entry.bytes_allocated - entry.stack_offset));
+                            let variable_location =  symbol_table.current_bytes_allocated - entry.stack_offset;
+                            ident_asm.push_str(&format!("\n\tldr w0, [sp, {}]", variable_location));
                         }
                     }
                     None => println!("No entry found for '{}'", ident),

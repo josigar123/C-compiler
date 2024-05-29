@@ -71,6 +71,6 @@ _main:
 	mov w0, #89
 	str w0, [sp, #0]
 	
-	ldr w0, [sp, 12]
+	ldr w0, [sp, 52]
 	add sp, sp, #80
 	ret
