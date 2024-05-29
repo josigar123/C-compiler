@@ -46,6 +46,10 @@ impl SymbolTable {
         self.entries.get(identifier)
     }
 
+    pub fn get_num_of_entries(&self) -> usize {
+        self.entries.len()
+    }
+
     pub fn pretty_print(&self) {
         println!("Symbol Table:");
         for (identifier, entry) in &self.entries {

@@ -1,5 +1,5 @@
 use crate::{
-    parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode}, symbol_table, token::TokenType
+    parser::{Expr, ExprNode, FunctionNode, ProgramNode, Statement, StatementNode}, token::TokenType
 };
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};
@@ -46,18 +46,21 @@ impl ExprNode {
                 _ => "Unsupported operator".to_string(),
             },
             Expr::BinaryOp(operator, left_expr, right_expr) => {
+
+
+
                 match operator {
                     TokenType::Plus => {
                         let mut addition_asm = "".to_string();
 
                         // Values will lie in x0
-                        let add_left_expr_asm = left_expr.generate_assembly();
-                        let add_right_expr_asm = right_expr.generate_assembly();
+                        let plus_right_expr_asm = right_expr.generate_assembly();
+                        let plus_left_expr_asm = left_expr.generate_assembly();
 
                         // Store left_expr_asm on stack, will lie in x0,
                         addition_asm += &format!(
                             "{}\n\tsub sp, sp, #16\n\tstr w0, [sp, 12]{}\n\tldr w1, [sp, 12]\n\tadd w0, w0, w1\n\tadd sp, sp, 16",
-                            add_left_expr_asm, add_right_expr_asm
+                            plus_left_expr_asm, plus_right_expr_asm
                         );
 
                         addition_asm
@@ -295,7 +298,7 @@ impl ExprNode {
 
                 if let Some(identifier) = identifier {
                     if let Expr::Identifier(ident_str) = &identifier.expr {
-                        let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                        let symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                         match symbol_table.lookup_entry(ident_str) {
                             Some(entry) => {
                                   decl_assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", entry.bytes_allocated - entry.stack_offset));
@@ -311,11 +314,9 @@ impl ExprNode {
             Expr::Identifier(ident) => {
                 let mut ident_asm = "".to_string();
 
-                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                let symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                 match symbol_table.lookup_entry(ident) {
                     Some(entry) => {
-                        // Only return stack offset in preparation for register operations
-                        //i.e. stack lookup.
                         if entry.is_initialized {
                             ident_asm.push_str(&format!("\n\tldr w0, [sp, {}]", entry.bytes_allocated - entry.stack_offset));
                         }
@@ -368,7 +369,7 @@ impl StatementNode {
 
                 // Scope to force symbol_table out of scope
                 {
-                    let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+                    let symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
                     stack_offset = symbol_table.current_stack_offset;
                     bytes_allocated = symbol_table.current_bytes_allocated;
                 }
@@ -396,21 +397,47 @@ impl StatementNode {
                 let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
 
                 let stack_offset = symbol_table.current_stack_offset;
-                if(16 - stack_offset) == 0 || stack_offset == 0 {
+                let mut total_bytes_allocated = symbol_table.current_bytes_allocated;
+
+                if(total_bytes_allocated - stack_offset) == 0 || stack_offset == 0 {
+                    println!("Bytes allocated on the stack: {}", symbol_table.current_bytes_allocated);
                     assign_asm.push_str(&format!("\n\tsub sp, sp, #16"));
                     symbol_table.allocate_space();
+                    println!("Bytes allocated on the stack: {}", symbol_table.current_bytes_allocated);
                 }
 
                 let expr_asm = expr_node.as_ref().unwrap().generate_assembly();
+                total_bytes_allocated = symbol_table.current_bytes_allocated; // Need to update the variable
                 assign_asm.push_str(&expr_asm);
-
                 if _token.token_type == TokenType::Identifier {
                     let token_value = _token.value.clone();
                     if let Some(token_value) = token_value {
 
                         symbol_table.add_entry(token_value, true);
                         let stack_offset = symbol_table.current_stack_offset;
-                        assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", 16 - stack_offset));
+                        let stack_offset_to_store_variable = total_bytes_allocated - stack_offset;
+                        //16 - stack_offset
+                        assign_asm.push_str(&format!("\n\tstr w0, [sp, #{}]", stack_offset_to_store_variable));
+                    }
+                }
+
+                assign_asm
+            }
+            Statement::Assignment(TokenType::IntKeyword, _token, _opt_assign, _opt_expr_node) => {
+                let mut assign_asm = "".to_string();
+                let mut symbol_table = SYMBOL_TABLE_GENERATOR.lock().unwrap();
+
+                let stack_offset = symbol_table.current_stack_offset;
+                let total_bytes_allocated = symbol_table.current_bytes_allocated;
+                if(total_bytes_allocated - stack_offset) == 0 || stack_offset == 0 {
+                    assign_asm.push_str(&format!("\n\tsub sp, sp, #16"));
+                    symbol_table.allocate_space();
+                }
+
+                if _token.token_type == TokenType::Identifier {
+                    let token_value = _token.value.clone();
+                    if let Some(token_value) = token_value {
+                        symbol_table.add_entry(token_value, false);
                     }
                 }
 
@@ -418,7 +445,7 @@ impl StatementNode {
             }
             Statement::Assignment(
                 TokenType::CharKeyword,
-                Token,
+                _token, // Not needed
                 Some(TokenType::Assign),
                 expr_node,
             ) => {
