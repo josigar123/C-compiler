@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/compiler/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="59893ff5-617f-40e6-ab1c-849ababe5f1c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/compiler/bin/out" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/bin/out.o" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/bin/out.s" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out.s" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/dynamic_register_control.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/dynamic_register_control.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/gen.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/gen.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/src/symbol_table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/symbol_table.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/tests/parser_tests/return" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/tests/parser_tests/return" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compiler/tests/parser_tests/return_int.c" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/tests/parser_tests/return_int.c" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feature_conditional_statements" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="n4m30une" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2h3GBs1K6VsHm2IrDbbfhxdkNb1" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Run.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature__variables&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/joseph/Documents/GitHub/C-compiler&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
+      <option name="command" value="run" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$/compiler" />
+      <envs />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="59893ff5-617f-40e6-ab1c-849ababe5f1c" name="Changes" comment="" />
+      <created>1716815215914</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1716815215914</updated>
+      <workItem from="1716815216959" duration="1153000" />
+      <workItem from="1716839258308" duration="4100000" />
+      <workItem from="1716894061656" duration="10309000" />
+      <workItem from="1716913385451" duration="144000" />
+      <workItem from="1716982969071" duration="5500000" />
+      <workItem from="1717004080267" duration="2255000" />
+      <workItem from="1717011700509" duration="793000" />
+      <workItem from="1717066370056" duration="594000" />
+      <workItem from="1717070068722" duration="11676000" />
+      <workItem from="1717155870165" duration="874000" />
+      <workItem from="1717248307858" duration="2349000" />
+      <workItem from="1717331877471" duration="2205000" />
+      <workItem from="1717415834217" duration="6450000" />
+      <workItem from="1717494246577" duration="58000" />
+      <workItem from="1717495483259" duration="2356000" />
+      <workItem from="1723631917592" duration="434000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
