@@ -6,6 +6,7 @@ mod parse_util;
 mod parser;
 mod pretty_printer;
 mod token;
+mod state_machine;
 
 fn main() {
     compile();

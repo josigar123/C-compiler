@@ -8,15 +8,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="59893ff5-617f-40e6-ab1c-849ababe5f1c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/compiler/bin/out" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/bin/out.o" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/bin/out.s" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/bin/out.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/dynamic_register_control.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/dynamic_register_control.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/gen.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/gen.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/compiler/src/state_machine.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compiler/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/src/symbol_table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/src/symbol_table.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/tests/parser_tests/return" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/tests/parser_tests/return" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compiler/tests/parser_tests/return_int.c" beforeDir="false" afterPath="$PROJECT_DIR$/compiler/tests/parser_tests/return_int.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,21 +47,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Cargo.Run.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature__variables&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/joseph/Documents/GitHub/C-compiler&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Cargo.Run.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "refactor/lexer",
+    "last_opened_file_path": "/Users/joseph/Documents/GitHub/C-compiler",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/compiler/src" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
@@ -113,6 +115,8 @@
       <workItem from="1717494246577" duration="58000" />
       <workItem from="1717495483259" duration="2356000" />
       <workItem from="1723631917592" duration="434000" />
+      <workItem from="1723910809627" duration="119000" />
+      <workItem from="1723911075934" duration="3272000" />
     </task>
     <servers />
   </component>
