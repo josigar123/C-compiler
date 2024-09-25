@@ -1,5 +1,6 @@
 # C-compiler
 A primitive C-compiler for an extremely small subset of the language written in Rust ( first time use of the language ).
+It compiles to ARM64 assembly, no other architecture is currently supported.
 
 ## Compiles:
 Supports integer binary operations such as: +, -, &&, ||, * /, <=, >= ==, !=, <, >
